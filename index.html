@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>سلطان العسل - النظام السحابي</title>
+    <link rel="stylesheet" href="style.css">
+    <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-database-compat.js"></script>
+</head>
+<body>
+
+<div class="container">
+    <div class="header">
+        <img src="1000031072.png" alt="شعار سلطان العسل">
+        <h2 id="pageTitle">نظام سلطان العسل - طلبات اليوم</h2>
+        <h3 id="archiveTitle" class="archive-mode-title">جاري عرض (الأرشيف الكامل)</h3>
+    </div>
+
+    <div class="input-section no-print">
+        <input type="text" id="custName" placeholder="اسم العميل">
+        <input type="text" id="orderID" placeholder="رقم الطلب">
+        <input type="number" id="orderPrice" placeholder="السعر">
+        <select id="empName">
+            <option value="">الموظف</option>
+            <option value="عمر">عمر</option>
+            <option value="مريم">مريم</option>
+        </select>
+        <select id="branchName">
+            <option value="المحاله">فرع المحاله</option>
+            <option value="الروضة">فرع الروضة</option>
+            <option value="التعمير">فرع التعمير</option>
+        </select>
+        <input type="text" id="deliveryType" placeholder="نوع التوصيل">
+        <select id="orderType">
+            <option value="سلة">سلة</option>
+            <option value="واتس">واتساب</option>
+        </select>
+        <button class="btn-main" onclick="saveOrder()">إضافة الطلب +</button>
+    </div>
+
+    <div class="print-controls no-print">
+        <button id="archiveBtn" class="btn-archive" onclick="toggleArchive()">📂 فتح الأرشيف الكامل</button>
+        <button class="btn-print" onclick="window.print()">طباعة المعروض</button>
+        <button class="btn-print" onclick="printByEmp('عمر')">طلبات عمر</button>
+        <button class="btn-print" onclick="printByEmp('مريم')">طلبات مريم</button>
+    </div>
+
+    <div class="dashboard">
+        <div class="column">
+            <h3>📦 طلبات سلة</h3>
+            <div id="sallaList"></div>
+        </div>
+        <div class="column">
+            <h3>💬 طلبات الواتساب</h3>
+            <div id="whatsappList"></div>
+        </div>
+    </div>
+</div>
+
+<script src="script.js"></script>
+</body>
+</html>
