@@ -1,19 +1,22 @@
+// بيانات الربط المصححة لتناسب مشروع sultan-honey
 const firebaseConfig = {
   apiKey: "AIzaSyCcgQj8bk5Me1g80EHLY7heukjUvH_GSKs",
-  authDomain: "sultan-huneyy.firebaseapp.com",
-  databaseURL: "https://sultan-huneyy-default-rtdb.firebaseio.com",
-  projectId: "sultan-huneyy",
-  storageBucket: "sultan-huneyy.firebasestorage.app",
+  authDomain: "sultan-honey.firebaseapp.com",
+  databaseURL: "https://sultan-honey-default-rtdb.firebaseio.com",
+  projectId: "sultan-honey",
+  storageBucket: "sultan-honey.firebasestorage.app",
   messagingSenderId: "701835618498",
   appId: "1:701835618498:web:701e310cf1c2c0dad6b35b"
 };
 
+// بدء تشغيل Firebase
 firebase.initializeApp(firebaseConfig);
 const db = firebase.database();
 
 const todayStr = new Date().toLocaleDateString('en-GB').replace(/\//g, '-');
 let isArchiveMode = false;
 
+// وظيفة حفظ الطلب وإرساله إلى Firebase
 function saveOrder() {
     const name = document.getElementById('custName').value;
     const emp = document.getElementById('empName').value;
@@ -31,13 +34,18 @@ function saveOrder() {
         fullDate: now.toLocaleDateString('ar-SA'),
         time: now.toLocaleTimeString('ar-SA', {hour: '2-digit', minute:'2-digit'}),
         timestamp: Date.now()
+    }).then(() => {
+        // تفريغ الخانات بعد النجاح
+        document.getElementById('custName').value = "";
+        document.getElementById('orderID').value = "";
+        document.getElementById('orderPrice').value = "";
+        alert("تمت إضافة الطلب بنجاح ✅");
+    }).catch((error) => {
+        alert("خطأ في الربط: " + error.message);
     });
-
-    document.getElementById('custName').value = "";
-    document.getElementById('orderID').value = "";
-    document.getElementById('orderPrice').value = "";
 }
 
+// وظيفة عرض البيانات من Firebase
 function loadData() {
     let query = db.ref('orders');
     if (!isArchiveMode) {
@@ -47,6 +55,8 @@ function loadData() {
     query.on('value', (snapshot) => {
         const sList = document.getElementById('sallaList');
         const wList = document.getElementById('whatsappList');
+        if(!sList || !wList) return;
+        
         sList.innerHTML = ""; wList.innerHTML = "";
         
         let data = [];
@@ -70,6 +80,7 @@ function loadData() {
     });
 }
 
+// تبديل بين الأرشيف وطلبات اليوم
 function toggleArchive() {
     isArchiveMode = !isArchiveMode;
     const btn = document.getElementById('archiveBtn');
@@ -79,23 +90,25 @@ function toggleArchive() {
     if (isArchiveMode) {
         btn.innerText = "🔙 العودة لطلبات اليوم";
         btn.style.background = "#6c757d";
-        archiveTitle.style.display = "block";
-        pageTitle.style.display = "none";
+        if(archiveTitle) archiveTitle.style.display = "block";
+        if(pageTitle) pageTitle.style.display = "none";
     } else {
         btn.innerText = "📂 فتح الأرشيف الكامل";
         btn.style.background = "#007bff";
-        archiveTitle.style.display = "none";
-        pageTitle.style.display = "block";
+        if(archiveTitle) archiveTitle.style.display = "none";
+        if(pageTitle) pageTitle.style.display = "block";
     }
     loadData();
 }
 
+// حذف طلب
 function confirmDelete(key) {
     if (confirm("هل أنت متأكد من حذف هذا الطلب نهائياً؟")) {
         db.ref('orders/' + key).remove();
     }
 }
 
+// طباعة طلب واحد
 function printSingle(btn) {
     const cardContent = btn.parentElement.innerHTML;
     const win = window.open('', '', 'width=400,height=400');
@@ -105,17 +118,5 @@ function printSingle(btn) {
     win.print();
 }
 
-function printByEmp(name) {
-    const cards = document.querySelectorAll(`.order-card[data-emp="${name}"]`);
-    if (cards.length === 0) return alert("لا توجد طلبات معروضة لهذا الموظف");
-    let content = `<h2>طلبات: ${name}</h2>`;
-    cards.forEach(c => {
-        content += `<div style="border:1px solid #ccc; margin:10px; padding:10px; direction:rtl; text-align:right;">${c.innerHTML}</div>`;
-    });
-    const win = window.open('', '', 'width=800,height=600');
-    win.document.write('<html><head><style>.btn-delete,.btn-print-single{display:none;}</style></head><body>' + content + '</body></html>');
-    win.document.close();
-    win.print();
-}
-
+// تشغيل جلب البيانات عند فتح الصفحة
 loadData();
