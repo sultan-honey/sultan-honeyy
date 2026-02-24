@@ -9,38 +9,39 @@
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
 </head>
 <body>
-    <div class="app-container">
+    <div id="loginScreen" class="login-container">
+        <img src="1000031072.png" alt="الشعار" class="login-logo">
+        <h2>تسجيل الدخول للنظام</h2>
+        <input type="text" id="username" placeholder="اسم المستخدم">
+        <input type="password" id="password" placeholder="كلمة المرور">
+        <button onclick="login()" class="btn-primary">دخول</button>
+    </div>
+
+    <div id="appBody" class="app-container" style="display: none;">
         <header class="main-header">
             <img src="1000031072.png" alt="شعار سلطان العسل" class="main-logo">
             <h1 class="system-title">سلطان العسل</h1>
-            <p class="system-subtitle">نظام الطلبات</p>
+            <p id="userWelcome" class="system-subtitle"></p>
+            <button onclick="logout()" class="btn-logout">تسجيل خروج ⬅️</button>
         </header>
 
-        <section class="form-section">
+        <section id="formArea" class="form-section">
             <div class="input-grid">
                 <input type="text" id="custName" placeholder="👤 اسم العميل">
-                <select id="empName">
-                    <option value="">👤 موظف خدمة العملاء</option>
-                    <option value="عمر">عمر</option>
-                    <option value="مريم">مريم</option>
-                </select>
                 <input type="text" id="prepEmp" placeholder="👨‍🍳 مسؤول التجهيز">
                 <input type="text" id="orderID" placeholder="🔢 رقم الطلب">
                 <input type="text" id="trackingID" placeholder="📄 رقم البوليصة">
                 <input type="number" id="orderPrice" placeholder="💰 السعر">
-                
                 <select id="branchName">
                     <option value="فرع المحالة">📍 فرع المحالة</option>
                     <option value="فرع الروضة">📍 فرع الروضة</option>
                     <option value="فرع التعمير">📍 فرع التعمير</option>
                 </select>
-
                 <select id="deliveryType">
                     <option value="توصيل مندوب">🛵 توصيل مندوب</option>
                     <option value="شحن سمسا">📦 شحن سمسا</option>
                     <option value="استلام من الفرع">🏠 استلام من الفرع</option>
                 </select>
-
                 <select id="orderType">
                     <option value="سلة">🛒 طلب سلة</option>
                     <option value="واتساب">💬 طلب واتساب</option>
@@ -49,12 +50,11 @@
             <button onclick="saveOrder()" class="btn-primary">إضافة وحفظ الطلب ✅</button>
         </section>
 
-        <div class="admin-actions">
+        <div id="adminActions" class="admin-actions">
             <button onclick="toggleArchive()" id="archiveBtn" class="btn-secondary">📂 سجل الأرشيف</button>
             <div class="print-grid-actions">
-                <button onclick="printByEmp('عمر')" class="btn-print-yellow">⎙ طباعة عمر</button>
-                <button onclick="printByEmp('مريم')" class="btn-print-yellow">⎙ طباعة مريم</button>
-                <button onclick="printAllToday()" class="btn-print-green">⎙ طباعة طلبات اليوم كاملة</button>
+                <button id="printMyOrders" onclick="printMyOrders()" class="btn-print-yellow">⎙ طباعة طلباتي</button>
+                <button id="printAllBtn" onclick="printAllToday()" class="btn-print-green">⎙ طباعة كل طلبات اليوم</button>
             </div>
         </div>
 
