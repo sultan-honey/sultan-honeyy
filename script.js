@@ -1,4 +1,3 @@
-// بيانات الربط المصححة لتناسب مشروع sultan-honey
 const firebaseConfig = {
   apiKey: "AIzaSyCcgQj8bk5Me1g80EHLY7heukjUvH_GSKs",
   authDomain: "sultan-honey.firebaseapp.com",
@@ -9,115 +8,115 @@ const firebaseConfig = {
   appId: "1:701835618498:web:701e310cf1c2c0dad6b35b"
 };
 
-// بدء تشغيل Firebase
 firebase.initializeApp(firebaseConfig);
 const db = firebase.database();
+const today = new Date().toLocaleDateString('en-GB').replace(/\//g, '-');
+let archiveMode = false;
 
-const todayStr = new Date().toLocaleDateString('en-GB').replace(/\//g, '-');
-let isArchiveMode = false;
-
-// وظيفة حفظ الطلب وإرساله إلى Firebase
 function saveOrder() {
     const name = document.getElementById('custName').value;
     const emp = document.getElementById('empName').value;
-    if (!name || !emp) return alert("يرجى إدخال اسم العميل واختيار الموظف");
+    if (!name || !emp) return alert("فضلاً أكمل البيانات");
 
-    const now = new Date();
     db.ref('orders').push({
         name, emp,
-        id: document.getElementById('orderID').value,
-        price: document.getElementById('orderPrice').value,
+        prepEmp: document.getElementById('prepEmp').value || "لم يحدد",
+        id: document.getElementById('orderID').value || "---",
+        trackingID: document.getElementById('trackingID').value || "---",
+        price: document.getElementById('orderPrice').value || "0",
         branch: document.getElementById('branchName').value,
         delivery: document.getElementById('deliveryType').value,
         type: document.getElementById('orderType').value,
-        dateKey: todayStr,
-        fullDate: now.toLocaleDateString('ar-SA'),
-        time: now.toLocaleTimeString('ar-SA', {hour: '2-digit', minute:'2-digit'}),
-        timestamp: Date.now()
+        dateKey: today,
+        time: new Date().toLocaleTimeString('ar-SA', {hour:'2-digit', minute:'2-digit'})
     }).then(() => {
-        // تفريغ الخانات بعد النجاح
-        document.getElementById('custName').value = "";
-        document.getElementById('orderID').value = "";
-        document.getElementById('orderPrice').value = "";
-        alert("تمت إضافة الطلب بنجاح ✅");
-    }).catch((error) => {
-        alert("خطأ في الربط: " + error.message);
+        alert("تم الحفظ ✅");
+        ["custName", "prepEmp", "orderID", "trackingID", "orderPrice"].forEach(id => document.getElementById(id).value = "");
     });
 }
 
-// وظيفة عرض البيانات من Firebase
 function loadData() {
-    let query = db.ref('orders');
-    if (!isArchiveMode) {
-        query = query.orderByChild('dateKey').equalTo(todayStr);
-    }
-
-    query.on('value', (snapshot) => {
+    db.ref('orders').on('value', (snap) => {
         const sList = document.getElementById('sallaList');
         const wList = document.getElementById('whatsappList');
-        if(!sList || !wList) return;
-        
         sList.innerHTML = ""; wList.innerHTML = "";
         
-        let data = [];
-        snapshot.forEach(child => {
-            data.push({key: child.key, ...child.val()});
-        });
+        snap.forEach(child => {
+            const o = child.val();
+            if (!archiveMode && o.dateKey !== today) return;
 
-        data.reverse().forEach((o) => {
             const card = `
                 <div class="order-card" data-emp="${o.emp}">
-                    <button class="btn-delete" onclick="confirmDelete('${o.key}')">✕</button>
-                    <button class="btn-print-single" onclick="printSingle(this)">⎙</button>
-                    <strong>${o.name}</strong> <span class="emp-tag">${o.emp}</span><br>
-                    <span>${o.branch} | السعر: ${o.price} ريال</span><br>
-                    <small>التوصيل: ${o.delivery || '---'}</small>
-                    <span class="date-badge">${o.time} | ${o.fullDate}</span>
+                    <button class="btn-delete" onclick="deleteWithPass('${child.key}')">✕</button>
+                    <button class="btn-print-single" onclick="printSingleOrder(this)">⎙</button>
+                    <strong>👤 ${o.name}</strong>
+                    <div class="card-details">
+                        <span>🏷️ الموظف: ${o.emp}</span> | <span>👨‍🍳 تجهيز: ${o.prepEmp}</span><br>
+                        <span>🔢 طلب: ${o.id}</span> | <span>📄 بوليصة: ${o.trackingID}</span><br>
+                        <span>📍 ${o.branch}</span> | <span>💰 ${o.price} ريال</span><br>
+                        <span>📦 ${o.delivery}</span>
+                    </div>
+                    <span class="date-badge">🕒 ${o.time} | 📅 ${o.dateKey}</span>
                 </div>`;
-            if (o.type === "سلة") sList.insertAdjacentHTML('beforeend', card);
-            else wList.insertAdjacentHTML('beforeend', card);
+            
+            if (o.type === "سلة") sList.insertAdjacentHTML('afterbegin', card);
+            else wList.insertAdjacentHTML('afterbegin', card);
         });
     });
 }
 
-// تبديل بين الأرشيف وطلبات اليوم
-function toggleArchive() {
-    isArchiveMode = !isArchiveMode;
-    const btn = document.getElementById('archiveBtn');
-    const archiveTitle = document.getElementById('archiveTitle');
-    const pageTitle = document.getElementById('pageTitle');
-
-    if (isArchiveMode) {
-        btn.innerText = "🔙 العودة لطلبات اليوم";
-        btn.style.background = "#6c757d";
-        if(archiveTitle) archiveTitle.style.display = "block";
-        if(pageTitle) pageTitle.style.display = "none";
-    } else {
-        btn.innerText = "📂 فتح الأرشيف الكامل";
-        btn.style.background = "#007bff";
-        if(archiveTitle) archiveTitle.style.display = "none";
-        if(pageTitle) pageTitle.style.display = "block";
-    }
-    loadData();
+function deleteWithPass(key) {
+    const password = prompt("كلمة السر للحذف:");
+    if (password === "6410") {
+        if(confirm("حذف؟")) db.ref('orders/' + key).remove();
+    } else if (password !== null) alert("خطأ!");
 }
 
-// حذف طلب
-function confirmDelete(key) {
-    if (confirm("هل أنت متأكد من حذف هذا الطلب نهائياً؟")) {
-        db.ref('orders/' + key).remove();
-    }
+const logoUrl = "1000031072.png";
+
+function formatInvoice(name, details, dateTime) {
+    const prepMatch = details.match(/تجهيز: (.*?)<\/span>/);
+    const prepName = prepMatch ? prepMatch[1] : "غير محدد";
+    return `
+        <div style="border: 2px solid #b48608; padding: 25px; margin-bottom: 30px; border-radius: 15px; position: relative; min-height: 300px; page-break-inside: avoid; direction: rtl; font-family: Tahoma, sans-serif;">
+            <div style="text-align: center; border-bottom: 2px solid #f1f1f1; margin-bottom: 15px; padding-bottom: 10px;">
+                <img src="${logoUrl}" style="width: 100px;"><br>
+                <h2 style="margin:5px 0; color: #b48608;">سلطان العسل</h2>
+                <p style="font-size: 14px; margin: 0; color: #666;">نظام إدارة الطلبات - ${dateTime}</p>
+            </div>
+            <div style="font-size: 18px; line-height: 1.8; margin-bottom: 50px;">
+                <b style="font-size: 22px; color: #333;">${name}</b><br>
+                ${details}
+            </div>
+            <div style="position: absolute; bottom: 20px; right: 25px; font-weight: bold; border-top: 1px solid #eee; width: 90%; padding-top: 10px; font-size: 16px;">
+                👨‍🍳 مسؤول التجهيز: <span style="color: #b48608;">${prepName}</span>
+            </div>
+        </div>`;
 }
 
-// طباعة طلب واحد
-function printSingle(btn) {
-    const cardContent = btn.parentElement.innerHTML;
-    const win = window.open('', '', 'width=400,height=400');
-    win.document.write('<html><head><style>body{direction:rtl;font-family:sans-serif;text-align:center;padding:20px;}.btn-delete,.btn-print-single{display:none;}.order-card{border:1px solid #000;padding:15px;}</style></head><body>');
-    win.document.write('<h2>سلطان العسل</h2>' + cardContent + '</body></html>');
-    win.document.close();
-    win.print();
+function printSingleOrder(btn) {
+    const card = btn.closest('.order-card');
+    document.body.innerHTML = formatInvoice(card.querySelector('strong').innerText, card.querySelector('.card-details').innerHTML, card.querySelector('.date-badge').innerText);
+    window.print();
+    setTimeout(() => location.reload(), 500);
 }
 
-// تشغيل جلب البيانات عند فتح الصفحة
+function startPrint(filterEmp = null) {
+    const cards = document.querySelectorAll('.order-card');
+    let allInvoices = "";
+    cards.forEach(card => {
+        if (!filterEmp || card.getAttribute('data-emp') === filterEmp) {
+            allInvoices += formatInvoice(card.querySelector('strong').innerText, card.querySelector('.card-details').innerHTML, card.querySelector('.date-badge').innerText);
+        }
+    });
+    if (!allInvoices) return alert("لا توجد طلبات");
+    document.body.innerHTML = `<div style="padding: 10px;">${allInvoices}</div>`;
+    window.print();
+    setTimeout(() => location.reload(), 500);
+}
+
+function printByEmp(name) { startPrint(name); }
+function printAllToday() { startPrint(null); }
+function toggleArchive() { archiveMode = !archiveMode; loadData(); }
+
 loadData();
-
