@@ -12,26 +12,63 @@ firebase.initializeApp(firebaseConfig);
 const db = firebase.database();
 const today = new Date().toLocaleDateString('en-GB').replace(/\//g, '-');
 let archiveMode = false;
+let editKey = null; // متغير لحفظ مفتاح الطلب الجاري تعديله
 
 function saveOrder() {
     const name = document.getElementById('custName').value;
     const emp = document.getElementById('empName').value;
     if (!name || !emp) return alert("فضلاً أكمل البيانات الأساسية");
 
-    db.ref('orders').push({
+    const orderData = {
         name, emp,
         prepEmp: document.getElementById('prepEmp').value || "لم يحدد",
         id: document.getElementById('orderID').value || "---",
-        trackingID: document.getElementById('trackingID').value || "", // تركها فارغة إذا لم تُدخل
-        price: document.getElementById('orderPrice').value || "", // تركها فارغة إذا لم تُدخل
+        trackingID: document.getElementById('trackingID').value || "",
+        price: document.getElementById('orderPrice').value || "",
         branch: document.getElementById('branchName').value,
         delivery: document.getElementById('deliveryType').value,
         type: document.getElementById('orderType').value,
         dateKey: today,
         time: new Date().toLocaleTimeString('ar-SA', {hour:'2-digit', minute:'2-digit'})
-    }).then(() => {
-        alert("تم الحفظ ✅");
-        ["custName", "prepEmp", "orderID", "trackingID", "orderPrice"].forEach(id => document.getElementById(id).value = "");
+    };
+
+    if (editKey) {
+        // تحديث طلب موجود
+        db.ref('orders/' + editKey).update(orderData).then(() => {
+            alert("تم التحديث بنجاح ✅");
+            resetForm();
+        });
+    } else {
+        // إضافة طلب جديد
+        db.ref('orders').push(orderData).then(() => {
+            alert("تم الحفظ ✅");
+            resetForm();
+        });
+    }
+}
+
+function resetForm() {
+    editKey = null;
+    document.querySelector('.btn-primary').innerText = "إضافة وحفظ الطلب ✅";
+    ["custName", "prepEmp", "orderID", "trackingID", "orderPrice"].forEach(id => document.getElementById(id).value = "");
+}
+
+function editOrder(key) {
+    db.ref('orders/' + key).once('value', (snap) => {
+        const o = snap.val();
+        editKey = key;
+        document.getElementById('custName').value = o.name;
+        document.getElementById('empName').value = o.emp;
+        document.getElementById('prepEmp').value = o.prepEmp;
+        document.getElementById('orderID').value = o.id;
+        document.getElementById('trackingID').value = o.trackingID;
+        document.getElementById('orderPrice').value = o.price;
+        document.getElementById('branchName').value = o.branch;
+        document.getElementById('deliveryType').value = o.delivery;
+        document.getElementById('orderType').value = o.type;
+        
+        document.querySelector('.btn-primary').innerText = "تحديث البيانات الآن 📝";
+        window.scrollTo({ top: 0, behavior: 'smooth' });
     });
 }
 
@@ -45,14 +82,15 @@ function loadData() {
             const o = child.val();
             if (!archiveMode && o.dateKey !== today) return;
 
-            // إخفاء السعر والبوليصة إذا كانت القيم فارغة
             const priceHtml = o.price ? ` | 💰 ${o.price} ريال` : "";
             const trackingHtml = o.trackingID ? ` | 📄 بوليصة: ${o.trackingID}` : "";
 
             const card = `
                 <div class="order-card" data-emp="${o.emp}" data-type="${o.type}">
                     <button class="btn-delete" onclick="deleteWithPass('${child.key}')">✕</button>
-                    <button class="btn-print-single" onclick="printSingleOrder(this)">⎙</button>
+                    <button class="btn-print-single" style="left:75px" onclick="printSingleOrder(this)">⎙</button>
+                    <button class="btn-edit" style="position:absolute; left:40px; top:12px; border:none; background:none; color:#007bff; font-size:20px; cursor:pointer;" onclick="editOrder('${child.key}')">📝</button>
+                    
                     <strong>👤 ${o.name}</strong>
                     <div class="card-details">
                         <span>🏷️ الموظف: ${o.emp}</span> | <span>👨‍🍳 تجهيز: ${o.prepEmp}</span><br>
@@ -81,7 +119,6 @@ const logoUrl = "1000031072.png";
 function formatInvoice(name, details, dateTime) {
     const prepMatch = details.match(/تجهيز: (.*?)<\/span>/);
     const prepName = prepMatch ? prepMatch[1] : "غير محدد";
-    
     return `
         <div style="border: 2px solid #b48608; padding: 25px; margin-bottom: 30px; border-radius: 15px; position: relative; min-height: 320px; page-break-inside: avoid; direction: rtl; font-family: Tahoma, sans-serif;">
             <div style="text-align: center; border-bottom: 2px solid #f1f1f1; margin-bottom: 15px; padding-bottom: 10px;">
