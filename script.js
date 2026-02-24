@@ -26,7 +26,7 @@ function saveOrder() {
         price: document.getElementById('orderPrice').value || "0",
         branch: document.getElementById('branchName').value,
         delivery: document.getElementById('deliveryType').value,
-        type: document.getElementById('orderType').value,
+        type: document.getElementById('orderType').value, // هنا يتم حفظ النوع (سلة/واتساب)
         dateKey: today,
         time: new Date().toLocaleTimeString('ar-SA', {hour:'2-digit', minute:'2-digit'})
     }).then(() => {
@@ -46,7 +46,7 @@ function loadData() {
             if (!archiveMode && o.dateKey !== today) return;
 
             const card = `
-                <div class="order-card" data-emp="${o.emp}">
+                <div class="order-card" data-emp="${o.emp}" data-type="${o.type}">
                     <button class="btn-delete" onclick="deleteWithPass('${child.key}')">✕</button>
                     <button class="btn-print-single" onclick="printSingleOrder(this)">⎙</button>
                     <strong>👤 ${o.name}</strong>
@@ -54,7 +54,7 @@ function loadData() {
                         <span>🏷️ الموظف: ${o.emp}</span> | <span>👨‍🍳 تجهيز: ${o.prepEmp}</span><br>
                         <span>🔢 طلب: ${o.id}</span> | <span>📄 بوليصة: ${o.trackingID}</span><br>
                         <span>📍 ${o.branch}</span> | <span>💰 ${o.price} ريال</span><br>
-                        <span>📦 ${o.delivery}</span>
+                        <span>📦 ${o.delivery}</span> | <span class="order-type-label">📑 النوع: ${o.type}</span>
                     </div>
                     <span class="date-badge">🕒 ${o.time} | 📅 ${o.dateKey}</span>
                 </div>`;
@@ -74,11 +74,13 @@ function deleteWithPass(key) {
 
 const logoUrl = "1000031072.png";
 
+// دالة تنسيق الفاتورة مع إضافة نوع الطلب في الطباعة
 function formatInvoice(name, details, dateTime) {
     const prepMatch = details.match(/تجهيز: (.*?)<\/span>/);
     const prepName = prepMatch ? prepMatch[1] : "غير محدد";
+    
     return `
-        <div style="border: 2px solid #b48608; padding: 25px; margin-bottom: 30px; border-radius: 15px; position: relative; min-height: 300px; page-break-inside: avoid; direction: rtl; font-family: Tahoma, sans-serif;">
+        <div style="border: 2px solid #b48608; padding: 25px; margin-bottom: 30px; border-radius: 15px; position: relative; min-height: 320px; page-break-inside: avoid; direction: rtl; font-family: Tahoma, sans-serif;">
             <div style="text-align: center; border-bottom: 2px solid #f1f1f1; margin-bottom: 15px; padding-bottom: 10px;">
                 <img src="${logoUrl}" style="width: 100px;"><br>
                 <h2 style="margin:5px 0; color: #b48608;">سلطان العسل</h2>
@@ -86,7 +88,7 @@ function formatInvoice(name, details, dateTime) {
             </div>
             <div style="font-size: 18px; line-height: 1.8; margin-bottom: 50px;">
                 <b style="font-size: 22px; color: #333;">${name}</b><br>
-                ${details}
+                ${details} 
             </div>
             <div style="position: absolute; bottom: 20px; right: 25px; font-weight: bold; border-top: 1px solid #eee; width: 90%; padding-top: 10px; font-size: 16px;">
                 👨‍🍳 مسؤول التجهيز: <span style="color: #b48608;">${prepName}</span>
