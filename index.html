@@ -3,61 +3,72 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>سلطان العسل - النظام السحابي</title>
+    <title>سلطان العسل - نظام الطلبات</title>
     <link rel="stylesheet" href="style.css">
-    <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-app-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-database-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
 </head>
 <body>
+    <div class="app-container">
+        <header class="main-header">
+            <img src="1000031072.png" alt="شعار سلطان العسل" class="main-logo">
+            <h1 class="system-title">سلطان العسل</h1>
+            <p class="system-subtitle">نظام الطلبات</p>
+        </header>
 
-<div class="container">
-    <div class="header">
-        <img src="1000031072.png" alt="شعار سلطان العسل">
-        <h2 id="pageTitle">نظام سلطان العسل - طلبات اليوم</h2>
-        <h3 id="archiveTitle" class="archive-mode-title">جاري عرض (الأرشيف الكامل)</h3>
-    </div>
+        <section class="form-section">
+            <div class="input-grid">
+                <input type="text" id="custName" placeholder="👤 اسم العميل">
+                <select id="empName">
+                    <option value="">👤 موظف خدمة العملاء</option>
+                    <option value="عمر">عمر</option>
+                    <option value="مريم">مريم</option>
+                </select>
+                <input type="text" id="prepEmp" placeholder="👨‍🍳 مسؤول التجهيز">
+                <input type="text" id="orderID" placeholder="🔢 رقم الطلب">
+                <input type="text" id="trackingID" placeholder="📄 رقم البوليصة">
+                <input type="number" id="orderPrice" placeholder="💰 السعر">
+                
+                <select id="branchName">
+                    <option value="فرع المحالة">📍 فرع المحالة</option>
+                    <option value="فرع الروضة">📍 فرع الروضة</option>
+                    <option value="فرع التعمير">📍 فرع التعمير</option>
+                </select>
 
-    <div class="input-section no-print">
-        <input type="text" id="custName" placeholder="اسم العميل">
-        <input type="text" id="orderID" placeholder="رقم الطلب">
-        <input type="number" id="orderPrice" placeholder="السعر">
-        <select id="empName">
-            <option value="">الموظف</option>
-            <option value="عمر">عمر</option>
-            <option value="مريم">مريم</option>
-        </select>
-        <select id="branchName">
-            <option value="المحاله">فرع المحاله</option>
-            <option value="الروضة">فرع الروضة</option>
-            <option value="التعمير">فرع التعمير</option>
-        </select>
-        <input type="text" id="deliveryType" placeholder="نوع التوصيل">
-        <select id="orderType">
-            <option value="سلة">سلة</option>
-            <option value="واتس">واتساب</option>
-        </select>
-        <button class="btn-main" onclick="saveOrder()">إضافة الطلب +</button>
-    </div>
+                <select id="deliveryType">
+                    <option value="توصيل مندوب">🛵 توصيل مندوب</option>
+                    <option value="شحن سمسا">📦 شحن سمسا</option>
+                    <option value="استلام من الفرع">🏠 استلام من الفرع</option>
+                </select>
 
-    <div class="print-controls no-print">
-        <button id="archiveBtn" class="btn-archive" onclick="toggleArchive()">📂 فتح الأرشيف الكامل</button>
-        <button class="btn-print" onclick="window.print()">طباعة المعروض</button>
-        <button class="btn-print" onclick="printByEmp('عمر')">طلبات عمر</button>
-        <button class="btn-print" onclick="printByEmp('مريم')">طلبات مريم</button>
-    </div>
+                <select id="orderType">
+                    <option value="سلة">🛒 طلب سلة</option>
+                    <option value="واتساب">💬 طلب واتساب</option>
+                </select>
+            </div>
+            <button onclick="saveOrder()" class="btn-primary">إضافة وحفظ الطلب ✅</button>
+        </section>
 
-    <div class="dashboard">
-        <div class="column">
-            <h3>📦 طلبات سلة</h3>
-            <div id="sallaList"></div>
+        <div class="admin-actions">
+            <button onclick="toggleArchive()" id="archiveBtn" class="btn-secondary">📂 سجل الأرشيف</button>
+            <div class="print-grid-actions">
+                <button onclick="printByEmp('عمر')" class="btn-print-yellow">⎙ طباعة عمر</button>
+                <button onclick="printByEmp('مريم')" class="btn-print-yellow">⎙ طباعة مريم</button>
+                <button onclick="printAllToday()" class="btn-print-green">⎙ طباعة طلبات اليوم كاملة</button>
+            </div>
         </div>
-        <div class="column">
-            <h3>💬 طلبات الواتساب</h3>
-            <div id="whatsappList"></div>
-        </div>
-    </div>
-</div>
 
-<script src="script.js"></script>
+        <main id="printArea" class="main-content">
+            <div class="list-column">
+                <h2 class="section-title">🛒 طلبات سلة</h2>
+                <div id="sallaList" class="list-container"></div>
+            </div>
+            <div class="list-column">
+                <h2 class="section-title">💬 طلبات واتساب</h2>
+                <div id="whatsappList" class="list-container"></div>
+            </div>
+        </main>
+    </div>
+    <script src="script.js"></script>
 </body>
 </html>
