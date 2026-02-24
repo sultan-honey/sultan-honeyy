@@ -16,17 +16,17 @@ let archiveMode = false;
 function saveOrder() {
     const name = document.getElementById('custName').value;
     const emp = document.getElementById('empName').value;
-    if (!name || !emp) return alert("فضلاً أكمل البيانات");
+    if (!name || !emp) return alert("فضلاً أكمل البيانات الأساسية");
 
     db.ref('orders').push({
         name, emp,
         prepEmp: document.getElementById('prepEmp').value || "لم يحدد",
         id: document.getElementById('orderID').value || "---",
-        trackingID: document.getElementById('trackingID').value || "---",
-        price: document.getElementById('orderPrice').value || "0",
+        trackingID: document.getElementById('trackingID').value || "", // تركها فارغة إذا لم تُدخل
+        price: document.getElementById('orderPrice').value || "", // تركها فارغة إذا لم تُدخل
         branch: document.getElementById('branchName').value,
         delivery: document.getElementById('deliveryType').value,
-        type: document.getElementById('orderType').value, // هنا يتم حفظ النوع (سلة/واتساب)
+        type: document.getElementById('orderType').value,
         dateKey: today,
         time: new Date().toLocaleTimeString('ar-SA', {hour:'2-digit', minute:'2-digit'})
     }).then(() => {
@@ -45,6 +45,10 @@ function loadData() {
             const o = child.val();
             if (!archiveMode && o.dateKey !== today) return;
 
+            // إخفاء السعر والبوليصة إذا كانت القيم فارغة
+            const priceHtml = o.price ? ` | 💰 ${o.price} ريال` : "";
+            const trackingHtml = o.trackingID ? ` | 📄 بوليصة: ${o.trackingID}` : "";
+
             const card = `
                 <div class="order-card" data-emp="${o.emp}" data-type="${o.type}">
                     <button class="btn-delete" onclick="deleteWithPass('${child.key}')">✕</button>
@@ -52,8 +56,8 @@ function loadData() {
                     <strong>👤 ${o.name}</strong>
                     <div class="card-details">
                         <span>🏷️ الموظف: ${o.emp}</span> | <span>👨‍🍳 تجهيز: ${o.prepEmp}</span><br>
-                        <span>🔢 طلب: ${o.id}</span> | <span>📄 بوليصة: ${o.trackingID}</span><br>
-                        <span>📍 ${o.branch}</span> | <span>💰 ${o.price} ريال</span><br>
+                        <span>🔢 طلب: ${o.id}</span>${trackingHtml}<br>
+                        <span>📍 ${o.branch}</span>${priceHtml}<br>
                         <span>📦 ${o.delivery}</span> | <span class="order-type-label">📑 النوع: ${o.type}</span>
                     </div>
                     <span class="date-badge">🕒 ${o.time} | 📅 ${o.dateKey}</span>
@@ -74,7 +78,6 @@ function deleteWithPass(key) {
 
 const logoUrl = "1000031072.png";
 
-// دالة تنسيق الفاتورة مع إضافة نوع الطلب في الطباعة
 function formatInvoice(name, details, dateTime) {
     const prepMatch = details.match(/تجهيز: (.*?)<\/span>/);
     const prepName = prepMatch ? prepMatch[1] : "غير محدد";
