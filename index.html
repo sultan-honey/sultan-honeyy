@@ -25,34 +25,28 @@
             <button onclick="logout()" class="btn-logout">تسجيل خروج ⬅️</button>
         </header>
 
-        <section class="smart-section">
-            <div class="smart-paste-box">
-                <p>✨ لصق سريع من (سلة/واتساب):</p>
-                <textarea id="smartInput" placeholder="انسخ نص الطلب كاملاً من سلة والصقه هنا..."></textarea>
-                <button onclick="processSmartPaste()" class="btn-smart">استخراج البيانات تلقائياً ⬇️</button>
-            </div>
+        <section class="smart-paste-box">
+            <textarea id="smartInput" placeholder="لصق نص الطلب من سلة هنا..."></textarea>
+            <button onclick="processSmartPaste()" class="btn-smart">✨ استخراج تلقائي</button>
         </section>
 
-        <section id="formArea" class="form-section">
+        <section class="form-section">
             <div class="input-grid">
                 <input type="text" id="custName" placeholder="👤 اسم العميل">
                 <input type="text" id="prepEmp" placeholder="👨‍🍳 مسؤول التجهيز">
                 <input type="text" id="orderID" placeholder="🔢 رقم الطلب">
                 <input type="text" id="trackingID" placeholder="📄 رقم البوليصة">
                 <input type="number" id="orderPrice" placeholder="💰 السعر الإجمالي">
-                
                 <select id="branchName">
                     <option value="فرع المحالة">📍 فرع المحالة</option>
                     <option value="فرع الروضة">📍 فرع الروضة</option>
                     <option value="فرع التعمير">📍 فرع التعمير</option>
                 </select>
-
                 <select id="deliveryType">
                     <option value="توصيل مندوب">🛵 توصيل مندوب</option>
                     <option value="شحن سمسا">📦 شحن سمسا</option>
                     <option value="استلام من الفرع">🏠 استلام من الفرع</option>
                 </select>
-
                 <select id="orderType">
                     <option value="سلة">🛒 طلب سلة</option>
                     <option value="واتساب">💬 طلب واتساب</option>
@@ -62,27 +56,26 @@
         </section>
 
         <div class="search-section">
-            <input type="text" id="searchInput" oninput="loadData()" placeholder="🔍 ابحث برقم الطلب، اسم العميل، أو البوليصة (شامل الأرشيف)...">
+            <input type="text" id="searchInput" oninput="loadData()" placeholder="🔍 ابحث في اليوم والأرشيف...">
         </div>
 
-        <div id="adminActions" class="admin-actions">
+        <div class="admin-actions">
             <button onclick="toggleArchive()" id="archiveBtn" class="btn-secondary">📂 سجل الأرشيف</button>
-            <button id="printMyOrders" onclick="printMyOrders()" class="btn-print-yellow">⎙ طباعة طلباتي</button>
-            <button id="printAllBtn" onclick="printAllToday()" class="btn-print-green">⎙ طباعة كل طلبات اليوم</button>
+            <button onclick="printMyOrders()" class="btn-print-yellow">⎙ طباعة طلباتي</button>
+            <button id="printAllBtn" onclick="printAllToday()" class="btn-print-green">⎙ طباعة الكل</button>
         </div>
 
-        <main id="printArea" class="main-content">
+        <main class="main-content">
             <div class="list-column">
                 <h2 class="section-title">🛒 طلبات سلة</h2>
-                <div id="sallaList" class="list-container"></div>
+                <div id="sallaList"></div>
             </div>
             <div class="list-column">
                 <h2 class="section-title">💬 طلبات واتساب</h2>
-                <div id="whatsappList" class="list-container"></div>
+                <div id="whatsappList"></div>
             </div>
         </main>
     </div>
-
     <script src="script.js"></script>
 </body>
 </html>
