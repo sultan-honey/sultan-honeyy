@@ -41,19 +41,25 @@ function showApp() {
     loadData(); 
 }
 
-// استخراج البيانات الذكي المطور
+// --- استخراج البيانات الذكي المطور (حل مشكلة التداخل) ---
 function processSmartPaste() {
     const text = document.getElementById('smartInput').value;
     if (!text) return;
 
-    // 1. استخراج الإجمالي (275) بدقة
+    // 1. استخراج السعر الإجمالي (275)
     const priceMatch = text.match(/إجمالي الطلب\s*[\n\r]*\s*.*?\s*(\d+(?:\.\d+)?)/);
     if (priceMatch) document.getElementById('orderPrice').value = priceMatch[1];
 
-    // 2. استخراج الاسم بدقة وتنظيفه
-    const nameMatch = text.match(/منذ \d+ ساعات?\s*([\u0600-\u06FF\s]+)/) || text.match(/(?:العميل)\s*[\n\r]*\s*.*?\s*([\u0600-\u06FF\s]+)/);
+    // 2. استخراج الاسم وتنظيفه من كلمات النظام (الرئيسية، المنتجات، إلخ)
+    const nameMatch = text.match(/منذ \d+ ساعات?\s*([\u0600-\u06FF\s]+)/) || 
+                     text.match(/(?:العميل)\s*[\n\r]*\s*.*?\s*([\u0600-\u06FF\s]+)/) ||
+                     text.match(/(.+)\n\+966/);
+    
     if (nameMatch) {
-        let cleanName = nameMatch[1].replace(/الرئيسية|المنتجات|الطلبات|العملاء|سلة/g, "").trim();
+        let cleanName = nameMatch[1]
+            .replace(/الرئيسية|المنتجات|الطلبات|العملاء|سلة|سلطان العسل|برو|موظف الطلب/g, "")
+            .replace(/\s+/g, ' ') // إزالة المسافات الزائدة
+            .trim();
         document.getElementById('custName').value = cleanName;
     }
 
@@ -62,7 +68,7 @@ function processSmartPaste() {
     if (idMatch) document.getElementById('orderID').value = idMatch[1];
 
     document.getElementById('orderType').value = "سلة";
-    alert("تم الاستخراج ✅");
+    alert("تم الاستخراج وتنظيف الاسم ✅");
 }
 
 function loadData() {
@@ -87,7 +93,7 @@ function loadData() {
                         <span>🏷️ الموظف: ${o.emp}</span><br>
                         <span>🔢 طلب: ${o.id}</span> | 💰 ${o.price} ر.س<br>
                         <span>📄 بوليصة: ${o.trackingID || '---'}</span><br>
-                        <span style="color:var(--gold); font-weight:bold;">📑 النوع: ${o.type}</span>
+                        <span style="color:#b48608; font-weight:bold;">📑 النوع: ${o.type}</span>
                     </div>
                 </div>`;
             o.type === "سلة" ? sList.insertAdjacentHTML('afterbegin', card) : wList.insertAdjacentHTML('afterbegin', card);
@@ -105,34 +111,18 @@ function printOrder(key) {
                     <img src="1000031072.png" style="width:80px;">
                     <h2 style="color:#b48608;">سلطان العسل</h2>
                     <hr>
-                    <div style="text-align:right; font-size:18px; line-height:2;">
+                    <div style="text-align:right; font-size:18px; line-height:2.2;">
                         <b>العميل:</b> ${o.name}<br>
                         <b style="color:#b48608;">نوع الطلب: ${o.type}</b><br>
                         <b>رقم الطلب:</b> ${o.id}<br>
                         <b>الإجمالي:</b> ${o.price} ريال<br>
                         <b>الموظف:</b> ${o.emp}<br>
-                        <b>تجهيز:</b> ${o.prepEmp}
+                        <b>تجهيز:</b> ${o.prepName || o.prepEmp || 'غير محدد'}
                     </div>
                 </div>
             </body>`);
         win.document.close(); win.print();
     });
-}
-
-function printAllToday() {
-    const cards = document.querySelectorAll('.order-card');
-    let html = "";
-    cards.forEach(c => {
-        const info = c.querySelector('.card-info').innerHTML;
-        const name = c.querySelector('strong').innerText;
-        html += `<div style="border:5px double #b48608; padding:20px; margin:10px; width:45%; display:inline-block; vertical-align:top; border-radius:10px; direction:rtl; font-family:Tahoma;">
-                    <h3 style="text-align:center;">سلطان العسل</h3>
-                    <b>${name}</b><br>${info}
-                 </div>`;
-    });
-    const win = window.open('', '', 'width=1000,height=800');
-    win.document.write('<body dir="rtl">' + html + '</body>');
-    win.document.close(); win.print();
 }
 
 function saveOrder() {
@@ -157,7 +147,7 @@ function saveOrder() {
 }
 
 function smartDelete(key) {
-    const p = prompt("أدخل كلمة مرور الموظف:");
+    const p = prompt("أدخل كلمة مرور الموظف للحذف:");
     if (p === users[currentUser]) {
         if(confirm("حذف الطلب؟")) db.ref('orders/' + key).remove();
     } else { alert("كلمة السر خطأ"); }
@@ -169,7 +159,7 @@ function editOrder(key) {
         document.getElementById('custName').value = o.name;
         document.getElementById('orderID').value = o.id;
         document.getElementById('orderPrice').value = o.price;
-        document.getElementById('saveBtn').innerText = "تحديث 📝";
+        document.getElementById('prepEmp').value = o.prepEmp;
         window.scrollTo(0,0);
     });
 }
