@@ -11,13 +11,12 @@ const firebaseConfig = {
 firebase.initializeApp(firebaseConfig);
 const db = firebase.database();
 const today = new Date().toLocaleDateString('en-GB').replace(/\//g, '-');
+const users = { "عمر": "111", "مريم": "222", "إبراهيم": "6410" };
 
 let currentUser = localStorage.getItem('loggedUser');
 let userRole = localStorage.getItem('userRole');
 let archiveMode = false;
 let editKey = null;
-
-const users = { "عمر": "111", "مريم": "222", "إبراهيم": "6410" };
 
 if (currentUser) { showApp(); }
 
@@ -27,10 +26,10 @@ function login() {
     if (users[user] === pass) {
         currentUser = user;
         userRole = (user === "إبراهيم") ? "admin" : "staff";
-        localStorage.setItem('loggedUser', currentUser);
+        localStorage.setItem('loggedUser', user);
         localStorage.setItem('userRole', userRole);
         location.reload();
-    } else { alert("خطأ في بيانات الدخول"); }
+    } else { alert("خطأ في البيانات"); }
 }
 
 function logout() { localStorage.clear(); location.reload(); }
@@ -42,39 +41,25 @@ function showApp() {
     loadData(); 
 }
 
-// --- نظام الاستخراج الذكي المحدث ---
+// استخراج البيانات الذكي المطور
 function processSmartPaste() {
     const text = document.getElementById('smartInput').value;
-    if (!text) return alert("الخانة فارغة!");
+    if (!text) return;
 
-    // 1. استخراج السعر الإجمالي (يبحث عن الرقم بعد كلمة إجمالي الطلب)
+    // 1. استخراج الإجمالي (275) بدقة
     const priceMatch = text.match(/إجمالي الطلب\s*[\n\r]*\s*.*?\s*(\d+(?:\.\d+)?)/);
-    if (priceMatch) {
-        document.getElementById('orderPrice').value = priceMatch[1];
-    } else {
-        const prices = text.match(/(\d+(?:\.\d+)?)\s*(?:SAR|ريال|ر\.س)/g);
-        if (prices) {
-            const lastPrice = prices[prices.length - 1].match(/\d+/);
-            document.getElementById('orderPrice').value = lastPrice;
-        }
-    }
+    if (priceMatch) document.getElementById('orderPrice').value = priceMatch[1];
 
-    // 2. استخراج اسم العميل بدقة وتجاهل الكلمات المتصلة (الرئيسية/المنتجات)
-    const nameMatch = text.match(/منذ \d+ ساعات?\s*([\u0600-\u06FF\s]+)/) || 
-                     text.match(/(?:العميل)\s*[\n\r]*\s*.*?\s*([\u0600-\u06FF\s]+)/) ||
-                     text.match(/(.+)\n\+966/);
+    // 2. استخراج الاسم بدقة وتنظيفه
+    const nameMatch = text.match(/منذ \d+ ساعات?\s*([\u0600-\u06FF\s]+)/) || text.match(/(?:العميل)\s*[\n\r]*\s*.*?\s*([\u0600-\u06FF\s]+)/);
     if (nameMatch) {
         let cleanName = nameMatch[1].replace(/الرئيسية|المنتجات|الطلبات|العملاء|سلة/g, "").trim();
         document.getElementById('custName').value = cleanName;
     }
 
-    // 3. استخراج رقم الطلب
+    // 3. رقم الطلب
     const idMatch = text.match(/(?:#|طلب رقم|الطلب)\s*(\d{7,15})/);
     if (idMatch) document.getElementById('orderID').value = idMatch[1];
-
-    // 4. استخراج رقم البوليصة
-    const trackingMatch = text.match(/(?:رقم شحنة|بوليصة|تتبع|KGAC)\s*[:#]?\s*([A-Z0-9]+)/);
-    if (trackingMatch) document.getElementById('trackingID').value = trackingMatch[1];
 
     document.getElementById('orderType').value = "سلة";
     alert("تم الاستخراج ✅");
@@ -91,67 +76,62 @@ function loadData() {
             if (!archiveMode && o.dateKey !== today) return;
 
             const card = `
-                <div class="order-card" data-emp="${o.emp}">
-                    <div class="card-tools" style="position:absolute; left:10px; top:10px; display:flex; gap:5px;">
-                        <button onclick="smartDelete('${child.key}')" style="border:none; background:none; cursor:pointer;">🗑️</button>
-                        <button onclick="editOrder('${child.key}')" style="border:none; background:none; cursor:pointer;">📝</button>
-                        <button onclick="printSingleOrder(this)" style="border:none; background:none; cursor:pointer;">⎙</button>
+                <div class="order-card">
+                    <div class="card-tools">
+                        <button onclick="smartDelete('${child.key}')">🗑️</button>
+                        <button onclick="editOrder('${child.key}')">📝</button>
+                        <button onclick="printOrder('${child.key}')">⎙</button>
                     </div>
                     <strong>👤 ${o.name}</strong>
-                    <div class="card-details">
-                        <span>🏷️ الموظف: ${o.emp}</span> | 👨‍🍳 تجهيز: ${o.prepEmp}<br>
-                        <span>🔢 طلب: ${o.id}</span> | 💰 ${o.price} ريال<br>
+                    <div class="card-info">
+                        <span>🏷️ الموظف: ${o.emp}</span><br>
+                        <span>🔢 طلب: ${o.id}</span> | 💰 ${o.price} ر.س<br>
                         <span>📄 بوليصة: ${o.trackingID || '---'}</span><br>
-                        <span>📦 ${o.delivery}</span> | <span class="order-type-label">📑 ${o.type}</span>
+                        <span style="color:var(--gold); font-weight:bold;">📑 النوع: ${o.type}</span>
                     </div>
-                    <span class="date-badge" style="font-size:10px; color:#999;">🕒 ${o.time} | 📅 ${o.dateKey}</span>
                 </div>`;
             o.type === "سلة" ? sList.insertAdjacentHTML('afterbegin', card) : wList.insertAdjacentHTML('afterbegin', card);
         });
     });
 }
 
-// --- تحسين نظام الطباعة لإظهار النوع ---
-const logoUrl = "1000031072.png";
-function formatInvoice(name, details, dateTime) {
-    // جلب نوع الطلب من التفاصيل الممررة
-    const typeMatch = details.match(/📑 (.*?)<\/span>/) || details.match(/📑 (.*?)$/);
-    const orderType = typeMatch ? typeMatch[1] : "غير محدد";
-
-    return `<div style="border: 10px double #b48608; padding: 25px; margin-bottom: 20px; border-radius: 15px; direction: rtl; font-family: Tahoma, sans-serif;">
-            <div style="text-align: center; border-bottom: 2px solid #f1f1f1; margin-bottom: 15px; padding-bottom: 10px;">
-                <img src="${logoUrl}" style="width: 100px;"><br>
-                <h2 style="margin:5px 0; color: #b48608;">سلطان العسل</h2>
-                <p style="font-size: 14px; margin: 0;">${dateTime}</p>
-            </div>
-            <div style="font-size: 19px; line-height: 2;">
-                <b>العميل: ${name}</b><br>
-                <div style="background:#fff9e6; padding:5px; border-radius:5px; display:inline-block; color:#b48608; font-weight:bold;">نوع الطلب: ${orderType}</div><br>
-                ${details.replace(/<button.*?<\/button>/g, '')} 
-            </div>
-            </div>`;
-}
-
-function printSingleOrder(btn) {
-    const card = btn.closest('.order-card');
-    const name = card.querySelector('strong').innerText;
-    const details = card.querySelector('.card-details').innerHTML;
-    const dateTime = card.querySelector('.date-badge').innerText;
-    const win = window.open('', '', 'height=700,width=800');
-    win.document.write('<html><body dir="rtl">' + formatInvoice(name, details, dateTime) + '</body></html>');
-    win.document.close(); win.print();
+function printOrder(key) {
+    db.ref('orders/' + key).once('value', s => {
+        const o = s.val();
+        const win = window.open('', '', 'width=800,height=700');
+        win.document.write(`
+            <body dir="rtl" style="font-family:Tahoma; padding:40px; display:flex; justify-content:center;">
+                <div style="width:500px; border:12px double #b48608; padding:30px; border-radius:15px; text-align:center;">
+                    <img src="1000031072.png" style="width:80px;">
+                    <h2 style="color:#b48608;">سلطان العسل</h2>
+                    <hr>
+                    <div style="text-align:right; font-size:18px; line-height:2;">
+                        <b>العميل:</b> ${o.name}<br>
+                        <b style="color:#b48608;">نوع الطلب: ${o.type}</b><br>
+                        <b>رقم الطلب:</b> ${o.id}<br>
+                        <b>الإجمالي:</b> ${o.price} ريال<br>
+                        <b>الموظف:</b> ${o.emp}<br>
+                        <b>تجهيز:</b> ${o.prepEmp}
+                    </div>
+                </div>
+            </body>`);
+        win.document.close(); win.print();
+    });
 }
 
 function printAllToday() {
     const cards = document.querySelectorAll('.order-card');
     let html = "";
     cards.forEach(c => {
-        if (c.style.display !== "none") {
-            html += formatInvoice(c.querySelector('strong').innerText, c.querySelector('.card-details').innerHTML, c.querySelector('.date-badge').innerText);
-        }
+        const info = c.querySelector('.card-info').innerHTML;
+        const name = c.querySelector('strong').innerText;
+        html += `<div style="border:5px double #b48608; padding:20px; margin:10px; width:45%; display:inline-block; vertical-align:top; border-radius:10px; direction:rtl; font-family:Tahoma;">
+                    <h3 style="text-align:center;">سلطان العسل</h3>
+                    <b>${name}</b><br>${info}
+                 </div>`;
     });
-    const win = window.open('', '', 'height=800,width=1000');
-    win.document.write('<html><body dir="rtl" style="padding:20px;">' + html + '</body></html>');
+    const win = window.open('', '', 'width=1000,height=800');
+    win.document.write('<body dir="rtl">' + html + '</body>');
     win.document.close(); win.print();
 }
 
@@ -177,16 +157,19 @@ function saveOrder() {
 }
 
 function smartDelete(key) {
-    if (confirm("حذف الطلب نهائياً؟")) db.ref('orders/' + key).remove();
+    const p = prompt("أدخل كلمة مرور الموظف:");
+    if (p === users[currentUser]) {
+        if(confirm("حذف الطلب؟")) db.ref('orders/' + key).remove();
+    } else { alert("كلمة السر خطأ"); }
 }
 
 function editOrder(key) {
-    db.ref('orders/' + key).once('value', snap => {
-        const o = snap.val(); editKey = key;
+    db.ref('orders/' + key).once('value', s => {
+        const o = s.val(); editKey = key;
         document.getElementById('custName').value = o.name;
         document.getElementById('orderID').value = o.id;
         document.getElementById('orderPrice').value = o.price;
-        document.querySelector('.btn-primary').innerText = "تحديث البيانات 📝";
+        document.getElementById('saveBtn').innerText = "تحديث 📝";
         window.scrollTo(0,0);
     });
 }
@@ -195,8 +178,7 @@ function resetForm() { editKey = null; location.reload(); }
 function toggleArchive() { archiveMode = !archiveMode; loadData(); }
 function filterOrders() {
     const term = document.getElementById('searchInput').value.toLowerCase();
-    const cards = document.querySelectorAll('.order-card');
-    cards.forEach(card => {
-        card.style.display = card.innerText.toLowerCase().includes(term) ? "block" : "none";
+    document.querySelectorAll('.order-card').forEach(c => {
+        c.style.display = c.innerText.toLowerCase().includes(term) ? "block" : "none";
     });
 }
