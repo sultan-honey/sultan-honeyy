@@ -1,4 +1,3 @@
-// الإعدادات
 const firebaseConfig = {
     apiKey: "AIzaSyCcgQj8bk5Me1g80EHLY7heukjUvH_GSKs",
     authDomain: "sultan-honey.firebaseapp.com",
@@ -12,21 +11,18 @@ const firebaseConfig = {
 firebase.initializeApp(firebaseConfig);
 const db = firebase.database();
 const today = new Date().toLocaleDateString('en-GB').replace(/\//g, '-');
-const users = { "عمر": "111", "مريم": "222", "إبراهيم": "6410" };
 
 let currentUser = localStorage.getItem('loggedUser');
 let archiveMode = false;
 
-if (currentUser) { showApp(); }
+if (currentUser) showApp();
 
-// تسجيل الدخول والوظائف الأساسية
 function login() {
-    const user = document.getElementById('username').value;
-    const pass = document.getElementById('password').value;
-    if (users[user] === pass) {
-        localStorage.setItem('loggedUser', user);
-        location.reload();
-    } else { alert("خطأ في البيانات"); }
+    const u = document.getElementById('username').value;
+    const p = document.getElementById('password').value;
+    const users = {"عمر":"111", "مريم":"222", "إبراهيم":"6410"};
+    if(users[u] === p) { localStorage.setItem('loggedUser', u); location.reload(); }
+    else alert("بيانات خاطئة");
 }
 
 function logout() { localStorage.clear(); location.reload(); }
@@ -34,38 +30,68 @@ function logout() { localStorage.clear(); location.reload(); }
 function showApp() {
     document.getElementById('loginScreen').style.display = 'none';
     document.getElementById('appBody').style.display = 'block';
-    document.getElementById('userWelcome').innerText = `مرحباً ${currentUser}`;
+    document.getElementById('userWelcome').innerText = "الموظف: " + currentUser;
     loadData();
 }
 
-// استخراج البيانات الذكي المطور لنص سلة الجديد
+// استخراج البيانات - نسخة مطورة جداً
 function processSmartPaste() {
-    const text = document.getElementById('smartInput').value;
-    if (!text) return;
+    let raw = document.getElementById('smartInput').value;
+    if(!raw) return;
 
-    // 1. استخراج رقم الطلب
-    const idMatch = text.match(/#(\d+)/) || text.match(/طلب رقم\s*(\d+)/);
-    if (idMatch) document.getElementById('orderID').value = idMatch[1];
+    // تنظيف النص من المسافات الزائدة جداً والأسطر الفارغة
+    let cleanText = raw.replace(/\n\s*\n/g, '\n').trim();
 
-    // 2. استخراج السعر (الرقم قبل SAR)
-    const priceMatch = text.match(/(\d+)\s*SAR/);
-    if (priceMatch) document.getElementById('orderPrice').value = priceMatch[1];
+    // 1. استخراج اسم العميل (السطر الذي يلي كلمة 'العميل')
+    let nameMatch = "";
+    let lines = cleanText.split('\n').map(l => l.trim());
+    let customerIndex = lines.findIndex(l => l === "العميل");
+    if(customerIndex !== -1 && lines[customerIndex+1]) {
+        nameMatch = lines[customerIndex+1];
+    }
+    document.getElementById('custName').value = nameMatch;
 
-    // 3. استخراج اسم العميل (النص بين "العميل" و "+966")
-    const nameMatch = text.match(/العميل\s*\n\s*([\u0600-\u06FF\s]+)\n\s*\+/);
-    if (nameMatch) document.getElementById('custName').value = nameMatch[1].trim();
+    // 2. استخراج رقم الطلب (بعد علامة #)
+    let idMatch = cleanText.match(/#(\d+)/);
+    if(idMatch) document.getElementById('orderID').value = idMatch[1];
 
-    // 4. استخراج رقم البوليصة (من سجل الطلب أو Smsa)
-    const trackMatch = text.match(/Tracking Number\s*(\d+)/) || text.match(/برقم شحنة\s*(\d+)/);
-    if (trackMatch) document.getElementById('trackingID').value = trackMatch[1];
+    // 3. استخراج الإجمالي (قبل كلمة SAR)
+    let priceMatch = cleanText.match(/إجمالي الطلب[\s\S]*?(\d+)\s*SAR/);
+    if(priceMatch) document.getElementById('orderPrice').value = priceMatch[1];
+
+    // 4. استخراج البوليصة (رقم الشحنة)
+    let trackMatch = cleanText.match(/رقم شحنة\s*(\d+)/) || cleanText.match(/Number\s*(\d+)/);
+    if(trackMatch) document.getElementById('trackingID').value = trackMatch[1];
 
     document.getElementById('orderType').value = "سلة";
-    alert("تم الاستخراج! تأكد من البيانات قبل الحفظ ✅");
 }
 
-// تحميل البيانات مع ميزة البحث الشامل وعرض التاريخ
+function saveOrder() {
+    const data = {
+        name: document.getElementById('custName').value,
+        id: document.getElementById('orderID').value,
+        trackingID: document.getElementById('trackingID').value,
+        price: document.getElementById('orderPrice').value,
+        emp: currentUser,
+        prepEmp: document.getElementById('prepEmp').value || "غير محدد",
+        branch: document.getElementById('branchName').value,
+        delivery: document.getElementById('deliveryType').value,
+        type: document.getElementById('orderType').value,
+        dateKey: today,
+        timestamp: Date.now()
+    };
+
+    if(!data.name) return alert("الاسم مفقود!");
+    
+    db.ref('orders').push(data).then(() => {
+        alert("تم الحفظ ✅");
+        document.getElementById('smartInput').value = "";
+        clearFields();
+    });
+}
+
 function loadData() {
-    db.ref('orders').on('value', (snap) => {
+    db.ref('orders').on('value', snap => {
         const sList = document.getElementById('sallaList');
         const wList = document.getElementById('whatsappList');
         sList.innerHTML = ""; wList.innerHTML = "";
@@ -74,32 +100,28 @@ function loadData() {
 
         snap.forEach(child => {
             const o = child.val();
-            if (o.dateKey === today) { count++; total += parseFloat(o.price || 0); }
+            if(o.dateKey === today) { count++; total += parseFloat(o.price || 0); }
 
-            // إنشاء الكرت مع وسم بيانات البحث الشامل
-            const card = `
-                <div class="order-card" id="${child.key}" data-search="${o.name} ${o.id} ${o.trackingID}">
-                    <div class="card-tools" style="position:absolute; left:10px; top:10px;">
-                        <button onclick="smartDelete('${child.key}')" style="border:none; background:none; cursor:pointer;">🗑️</button>
-                        <button onclick="editOrder('${child.key}')" style="border:none; background:none; cursor:pointer;">📝</button>
-                        <button onclick="printSingleOrder('${child.key}')" style="border:none; background:none; cursor:pointer;">⎙</button>
+            const cardHtml = `
+                <div class="order-card" data-search="${o.name} ${o.id} ${o.trackingID}">
+                    <div class="card-header-info">📅 ${o.dateKey} | 🕒 ${o.type}</div>
+                    <strong>${o.name}</strong>
+                    <div class="details">
+                        رقم الطلب: ${o.id} | البوليصة: ${o.trackingID || 'لا يوجد'}<br>
+                        بواسطة: ${o.emp} | التجهيز: ${o.prepEmp}<br>
+                        المبلغ: ${o.price} ريال | ${o.branch}
                     </div>
-                    <span class="card-date">📅 ${o.dateKey} | 🕒 ${o.time || ''}</span>
-                    <strong>👤 ${o.name}</strong>
-                    <div class="card-details">
-                        <span>🏷️ الموظف: ${o.emp}</span> | 👨‍🍳 تجهيز: ${o.prepEmp}<br>
-                        <span>🔢 طلب: ${o.id}</span> | 💰 ${o.price} ر.س<br>
-                        <span>📄 بوليصة: ${o.trackingID || '---'}</span>
-                    </div>
-                </div>`;
+                    <button onclick="deleteOrder('${child.key}')" style="background:none; border:none; color:red; cursor:pointer; float:left;">🗑️</button>
+                </div>
+            `;
 
-            // العرض الافتراضي (اليوم فقط إلا إذا تم تفعيل الأرشيف)
+            // في حالة البحث الشامل أو اليوم أو الأرشيف
             if (archiveMode || o.dateKey === today) {
-                o.type === "سلة" ? sList.insertAdjacentHTML('afterbegin', card) : wList.insertAdjacentHTML('afterbegin', card);
+                o.type === "سلة" ? sList.insertAdjacentHTML('afterbegin', cardHtml) : wList.insertAdjacentHTML('afterbegin', cardHtml);
             } else {
                 // مخفي للبحث الشامل
-                const hiddenCard = card.replace('class="order-card"', 'class="order-card" style="display:none"');
-                o.type === "سلة" ? sList.insertAdjacentHTML('afterbegin', hiddenCard) : wList.insertAdjacentHTML('afterbegin', hiddenCard);
+                const hidden = cardHtml.replace('order-card"', 'order-card" style="display:none"');
+                o.type === "سلة" ? sList.insertAdjacentHTML('afterbegin', hidden) : wList.insertAdjacentHTML('afterbegin', hidden);
             }
         });
         document.getElementById('countToday').innerText = count;
@@ -107,67 +129,23 @@ function loadData() {
     });
 }
 
-// ميزة البحث الشامل (تبحث في كل شيء وتكشف المطابق)
+// البحث الشامل في كل الطلبات (اليوم والأرشيف)
 function filterOrders() {
     const term = document.getElementById('searchInput').value.toLowerCase();
-    document.querySelectorAll('.order-card').forEach(c => {
-        const data = c.getAttribute('data-search').toLowerCase();
-        if (term === "") {
-            // العودة للوضع الافتراضي عند مسح البحث
-            loadData(); 
-        } else {
-            c.style.display = data.includes(term) ? "block" : "none";
-        }
+    const cards = document.querySelectorAll('.order-card');
+    cards.forEach(c => {
+        const text = c.getAttribute('data-search').toLowerCase();
+        c.style.display = text.includes(term) ? "block" : "none";
     });
 }
 
-function saveOrder() {
-    const data = {
-        name: document.getElementById('custName').value,
-        emp: currentUser,
-        prepEmp: document.getElementById('prepEmp').value || "غير محدد",
-        id: document.getElementById('orderID').value || "---",
-        trackingID: document.getElementById('trackingID').value || "",
-        price: document.getElementById('orderPrice').value || "0",
-        branch: document.getElementById('branchName').value,
-        delivery: document.getElementById('deliveryType').value,
-        type: document.getElementById('orderType').value,
-        dateKey: today,
-        time: new Date().toLocaleTimeString('ar-SA')
-    };
-    if(data.name) {
-        db.ref('orders').push(data).then(() => { alert("تم الحفظ ✅"); resetForm(); });
-    } else { alert("يرجى إدخال اسم العميل"); }
-}
-
-// طباعة كشف اليوم فقط
-function printAllToday() {
-    const salla = document.getElementById('sallaList').innerHTML;
-    const whatsapp = document.getElementById('whatsappList').innerHTML;
-    const win = window.open('', '', 'width=900,height=800');
-    win.document.write(`
-        <html dir="rtl">
-        <head><style>
-            body { font-family: Tahoma; padding: 20px; }
-            .order-card { border: 2px solid #b48608; padding: 10px; margin-bottom: 10px; border-radius: 8px; page-break-inside: avoid; }
-            .card-tools { display: none; }
-            h1, h2 { text-align: center; color: #b48608; }
-        </style></head>
-        <body>
-            <h1>📦 كشف طلبات يوم: ${today}</h1>
-            <h2>🛒 طلبات سلة</h2> ${salla}
-            <h2>💬 طلبات واتساب</h2> ${whatsapp}
-        </body></html>`);
-    win.document.close();
-    setTimeout(() => { win.print(); win.close(); }, 500);
-}
-
-function resetForm() {
-    document.getElementById('custName').value = "";
-    document.getElementById('orderID').value = "";
-    document.getElementById('trackingID').value = "";
-    document.getElementById('orderPrice').value = "";
+function clearFields() {
+    ["custName","orderID","trackingID","orderPrice","prepEmp"].forEach(id => document.getElementById(id).value = "");
 }
 
 function toggleArchive() { archiveMode = !archiveMode; loadData(); }
-function smartDelete(key) { if(confirm("حذف؟")) db.ref('orders/'+key).remove(); }
+function deleteOrder(key) { if(confirm("حذف؟")) db.ref('orders/'+key).remove(); }
+
+function printAllToday() {
+    window.print(); // سيطبع المعروض حالياً في الصفحة بتنسيق المتصفح
+}
