@@ -22,62 +22,62 @@
 
     <div id="appBody" class="app-container" style="display: none;">
         <header class="main-header">
-            <button onclick="logout()" class="btn-logout">تسجيل خروج</button>
+            <button onclick="logout()" class="btn-logout">خروج ⬅️</button>
             <img src="1000031072.png" alt="الشعار" class="header-logo">
             <h1 class="system-title">سلطان العسل</h1>
-            <div id="userWelcome" class="stats-bar"></div>
+            <div id="userWelcome"></div>
         </header>
 
-        <main class="content-wrapper">
-            <section class="entry-section">
-                <div class="smart-box">
-                    <textarea id="smartInput" placeholder="الصق نص الطلب من سلة هنا..."></textarea>
-                    <button onclick="processSmartPaste()" class="btn-smart">✨ استخراج ذكي</button>
-                </div>
+        <section class="smart-paste-area">
+            <textarea id="smartInput" placeholder="الصق نص الطلب من سلة هنا..."></textarea>
+            <button onclick="processSmartPaste()" class="btn-extract">✨ استخراج البيانات وتعبئة النموذج</button>
+        </section>
 
-                <div class="input-grid">
-                    <input type="text" id="custName" placeholder="👤 اسم العميل">
-                    <input type="text" id="prepEmp" placeholder="👨‍🍳 مسؤول التجهيز">
-                    <input type="text" id="orderID" placeholder="🔢 رقم الطلب">
-                    <input type="text" id="trackingID" placeholder="📄 رقم البوليصة">
-                    <input type="number" id="orderPrice" placeholder="💰 السعر الإجمالي">
-                    <select id="branchName">
-                        <option value="فرع المحالة">📍 فرع المحالة</option>
-                        <option value="فرع الروضة">📍 فرع الروضة</option>
-                        <option value="فرع التعمير">📍 فرع التعمير</option>
-                    </select>
-                    <select id="deliveryType">
-                        <option value="توصيل مندوب">🛵 توصيل مندوب</option>
-                        <option value="شحن سمسا">📦 شحن سمسا</option>
-                        <option value="استلام من الفرع">🏠 استلام من الفرع</option>
-                    </select>
-                    <select id="orderType">
-                        <option value="سلة">🛒 طلب سلة</option>
-                        <option value="واتساب">💬 طلب واتساب</option>
-                    </select>
-                </div>
-                <button onclick="saveOrder()" class="btn-primary full-width">حفظ الطلب ✅</button>
-            </section>
+        <section class="form-section">
+            <div class="input-grid">
+                <input type="text" id="custName" placeholder="👤 اسم العميل">
+                <input type="text" id="prepEmp" placeholder="👨‍🍳 مسؤول التجهيز">
+                <input type="text" id="orderID" placeholder="🔢 رقم الطلب">
+                <input type="text" id="trackingID" placeholder="📄 رقم البوليصة">
+                <input type="number" id="orderPrice" placeholder="💰 السعر الإجمالي">
+                
+                <select id="branchName">
+                    <option value="فرع المحالة">📍 فرع المحالة</option>
+                    <option value="فرع الروضة">📍 فرع الروضة</option>
+                    <option value="فرع التعمير">📍 فرع التعمير</option>
+                </select>
 
-            <section class="tools-section">
-                <input type="text" id="searchInput" oninput="loadData()" placeholder="🔍 ابحث في اليوم والأرشيف...">
-                <div class="action-buttons">
-                    <button onclick="toggleArchive()" id="archiveBtn" class="btn-gray">📂 الأرشيف</button>
-                    <button onclick="printMyOrders()" class="btn-yellow">⎙ طلباتي</button>
-                    <button onclick="printAllToday()" class="btn-gold">⎙ طباعة الكل</button>
-                </div>
-            </section>
+                <select id="deliveryType">
+                    <option value="توصيل مندوب">🛵 توصيل مندوب</option>
+                    <option value="شحن سمسا">📦 شحن سمسا</option>
+                    <option value="استلام من الفرع">🏠 استلام من الفرع</option>
+                </select>
 
-            <section class="display-section">
-                <div class="column">
-                    <h2 class="col-title">🛒 سلة</h2>
-                    <div id="sallaList"></div>
-                </div>
-                <div class="column">
-                    <h2 class="col-title">💬 واتساب</h2>
-                    <div id="whatsappList"></div>
-                </div>
-            </section>
+                <select id="orderType">
+                    <option value="سلة">🛒 طلب سلة</option>
+                    <option value="واتساب">💬 طلب واتساب</option>
+                </select>
+            </div>
+            <button onclick="saveOrder()" class="btn-primary main-save">حفظ الطلب الآن ✅</button>
+        </section>
+
+        <div class="tools-area">
+            <input type="text" id="searchInput" oninput="loadData()" placeholder="🔍 ابحث بالاسم، رقم الطلب، أو البوليصة...">
+            <div class="admin-btns">
+                <button onclick="toggleArchive()" id="archiveBtn" class="btn-gray">📂 سجل الأرشيف</button>
+                <button onclick="printAllToday()" class="btn-gold">⎙ طباعة كشف اليوم</button>
+            </div>
+        </div>
+
+        <main class="lists-wrapper">
+            <div class="list-col">
+                <h2 class="list-title">🛒 طلبات سلة</h2>
+                <div id="sallaList"></div>
+            </div>
+            <div class="list-col">
+                <h2 class="list-title">💬 طلبات واتساب</h2>
+                <div id="whatsappList"></div>
+            </div>
         </main>
     </div>
 
