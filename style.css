@@ -1,58 +1,47 @@
 :root {
     --gold: #b48608;
-    --black: #1a1a1a;
-    --gray-bg: #f4f4f4;
+    --dark-gold: #8e6a06;
+    --bg: #f4f4f4;
 }
 
-body {
-    font-family: 'Segoe UI', Tahoma, sans-serif;
-    margin: 0; direction: rtl; background: var(--gray-bg);
-}
+* { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, sans-serif; }
+body { background: var(--bg); direction: rtl; }
 
-/* شاشة تسجيل دخول متناسقة */
-.login-overlay {
-    position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-    background: rgba(0,0,0,0.9); display: flex; justify-content: center; align-items: center; z-index: 9999;
-}
-.login-box {
-    background: white; padding: 40px; border-radius: 20px; text-align: center;
-    border: 3px solid var(--gold); box-shadow: 0 0 20px var(--gold); width: 350px;
-}
+.login-container { max-width: 350px; margin: 100px auto; background: white; padding: 30px; border-radius: 20px; text-align: center; box-shadow: 0 10px 30px rgba(0,0,0,0.1); }
 .login-logo { width: 100px; margin-bottom: 20px; }
-.login-fields input {
-    width: 100%; padding: 12px; margin: 10px 0; border: 1px solid #ddd; border-radius: 8px; box-sizing: border-box;
-}
-.btn-primary-gold {
-    background: var(--gold); color: white; border: none; padding: 15px; width: 100%; border-radius: 8px; cursor: pointer; font-weight: bold;
-}
+.login-container input { width: 100%; padding: 12px; margin-bottom: 10px; border: 1px solid #ddd; border-radius: 10px; text-align: center; }
 
-/* الهيدر */
-.main-header {
-    background: var(--black); color: var(--gold); padding: 15px 30px;
-    display: flex; justify-content: space-between; align-items: center; border-bottom: 3px solid var(--gold);
-}
-.header-logo { width: 60px; }
+.app-container { max-width: 1100px; margin: 20px auto; padding: 20px; }
+.main-header { background: white; padding: 20px; border-radius: 15px; text-align: center; position: relative; box-shadow: 0 4px 10px rgba(0,0,0,0.05); }
+.main-logo { width: 70px; }
+.system-title { color: var(--gold); margin: 5px 0; }
+.btn-logout { position: absolute; left: 20px; top: 20px; background: #ff4d4d; color: white; border: none; padding: 5px 12px; border-radius: 5px; cursor: pointer; }
 
-/* الكروت */
-.order-card {
-    background: white; border-right: 6px solid var(--gold); border-radius: 12px;
-    padding: 15px; margin-bottom: 15px; position: relative; box-shadow: 0 4px 8px rgba(0,0,0,0.1);
-}
-.card-tools { position: absolute; left: 10px; top: 10px; display: flex; gap: 5px; }
-.card-tools button { border: none; background: #f0f0f0; cursor: pointer; padding: 5px; border-radius: 5px; font-size: 16px; }
-.card-tools button:hover { background: #e0e0e0; }
+.smart-paste-box { background: #fffdf0; border: 2px dashed var(--gold); padding: 15px; border-radius: 15px; margin: 20px 0; text-align: center; }
+.smart-paste-box textarea { width: 100%; height: 70px; padding: 10px; border-radius: 10px; border: 1px solid #ddd; resize: none; margin-bottom: 10px; }
+.btn-smart { background: var(--gold); color: white; border: none; padding: 10px 20px; border-radius: 8px; cursor: pointer; width: 100%; font-weight: bold; }
 
-/* خانة البحث والأزرار */
-.tools-area { padding: 20px; display: flex; gap: 15px; flex-wrap: wrap; }
-#searchInput { flex: 1; padding: 12px; border-radius: 8px; border: 1px solid var(--gold); }
-.admin-btns { display: flex; gap: 10px; }
+.form-section { background: white; padding: 20px; border-radius: 15px; box-shadow: 0 4px 10px rgba(0,0,0,0.05); }
+.input-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 10px; margin-bottom: 15px; }
+input, select { padding: 10px; border: 1px solid #eee; border-radius: 8px; outline: none; }
+.btn-primary { width: 100%; padding: 15px; background: #28a745; color: white; border: none; border-radius: 10px; font-weight: bold; cursor: pointer; }
 
-/* ألوان الأزرار */
-.btn-save { background: #27ae60; color: white; padding: 15px; width: 100%; border: none; border-radius: 8px; cursor: pointer; font-size: 16px; font-weight: bold; }
-.btn-gold { background: var(--gold); color: white; border: none; padding: 10px 20px; border-radius: 8px; cursor: pointer; }
-.btn-gray { background: #666; color: white; border: none; padding: 10px 20px; border-radius: 8px; cursor: pointer; }
+.search-section { margin: 20px 0; }
+.search-section input { width: 100%; padding: 15px; border-radius: 12px; border: 2px solid var(--gold); font-size: 16px; outline: none; }
 
-/* القوائم */
-.lists-wrapper { display: flex; gap: 20px; padding: 20px; }
-.list-col { flex: 1; }
-.list-title { border-bottom: 2px solid var(--gold); padding-bottom: 10px; text-align: center; }
+.admin-actions { display: flex; gap: 10px; justify-content: center; margin-bottom: 20px; flex-wrap: wrap; }
+.btn-secondary { background: #6c757d; color: white; border: none; padding: 10px 20px; border-radius: 8px; cursor: pointer; }
+.btn-print-yellow { background: #ffc107; padding: 10px 20px; border-radius: 8px; border: none; cursor: pointer; font-weight: bold; }
+.btn-print-green { background: #17a2b8; color: white; padding: 10px 20px; border-radius: 8px; border: none; cursor: pointer; font-weight: bold; }
+
+.main-content { display: flex; gap: 20px; flex-wrap: wrap; }
+.list-column { flex: 1; min-width: 300px; }
+.section-title { color: var(--gold); border-bottom: 2px solid var(--gold); margin-bottom: 15px; padding-bottom: 5px; }
+
+.order-card { background: white; padding: 15px; border-radius: 12px; margin-bottom: 10px; position: relative; border-right: 5px solid var(--gold); box-shadow: 0 2px 5px rgba(0,0,0,0.05); }
+.btn-delete { position: absolute; left: 10px; top: 10px; color: #ff4d4d; border: none; background: none; font-size: 18px; cursor: pointer; }
+.btn-print-single { position: absolute; left: 70px; top: 10px; background: none; border: none; font-size: 18px; cursor: pointer; color: #666; }
+.card-details { font-size: 13px; color: #555; line-height: 1.6; }
+.date-badge { font-size: 11px; color: #999; display: block; margin-top: 5px; }
+
+@media (max-width: 768px) { .main-content { flex-direction: column; } }
