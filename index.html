@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>سلطان العسل - النظام المطور</title>
+    <title>سلطان العسل - النظام الاحترافي</title>
     <link rel="stylesheet" href="style.css">
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
@@ -13,41 +13,48 @@
     <div id="loginScreen" class="login-overlay">
         <div class="login-box">
             <img src="1000031072.png" class="login-logo">
-            <h2>تسجيل دخول</h2>
+            <h2>تسجيل دخول الإدارة</h2>
             <input type="text" id="username" placeholder="اسم المستخدم">
             <input type="password" id="password" placeholder="كلمة المرور">
-            <button onclick="login()" class="btn-primary">دخول</button>
+            <button onclick="login()" class="btn-primary">دخول آمن</button>
         </div>
     </div>
 
     <div id="appBody" class="app-container" style="display: none;">
         <header class="main-header">
             <button onclick="logout()" class="btn-logout">خروج</button>
-            <img src="1000031072.png" class="header-logo">
-            <h1 class="system-title">سلطان العسل</h1>
+            <div class="header-center">
+                <img src="1000031072.png" class="header-logo">
+                <h1 class="system-title">سلطان العسل</h1>
+            </div>
             <div id="userWelcome"></div>
         </header>
 
+        <div class="stats-bar">
+            <div class="stat-item">📦 طلبات اليوم: <span id="countToday">0</span></div>
+            <div class="stat-item">💰 المبيعات: <span id="sumToday">0</span> ر.س</div>
+        </div>
+
         <section class="smart-paste-area">
-            <textarea id="smartInput" placeholder="الصق بيانات طلب سلة هنا..."></textarea>
-            <button onclick="processSmartPaste()" class="btn-extract">✨ استخراج البيانات والإجمالي</button>
+            <textarea id="smartInput" placeholder="الصق بيانات طلب سلة هنا بالكامل..."></textarea>
+            <button onclick="processSmartPaste()" class="btn-extract">✨ استخراج ذكي للبيانات</button>
         </section>
 
         <section class="form-section">
             <div class="input-grid">
                 <input type="text" id="custName" placeholder="👤 اسم العميل">
-                <input type="text" id="prepEmp" placeholder="👨‍🍳 مسؤول التجهيز">
                 <input type="text" id="orderID" placeholder="🔢 رقم الطلب">
                 <input type="text" id="trackingID" placeholder="📄 رقم البوليصة">
                 <input type="number" id="orderPrice" placeholder="💰 السعر الإجمالي">
+                <input type="text" id="prepEmp" placeholder="👨‍🍳 مسؤول التجهيز">
                 <select id="branchName">
                     <option>📍 فرع المحالة</option>
                     <option>📍 فرع الروضة</option>
                     <option>📍 فرع التعمير</option>
                 </select>
                 <select id="deliveryType">
-                    <option>🛵 توصيل مندوب</option>
                     <option>📦 شحن سمسا</option>
+                    <option>🛵 توصيل مندوب</option>
                     <option>🏠 استلام فرع</option>
                 </select>
                 <select id="orderType">
@@ -55,11 +62,11 @@
                     <option value="واتساب">💬 طلب واتساب</option>
                 </select>
             </div>
-            <button id="saveBtn" onclick="saveOrder()" class="btn-primary">حفظ الطلب ✅</button>
+            <button id="saveBtn" onclick="saveOrder()" class="btn-primary">حفظ الطلب في القاعدة ✅</button>
         </section>
 
         <div class="tools-area">
-            <input type="text" id="searchInput" oninput="filterOrders()" placeholder="🔍 ابحث بالاسم أو الرقم...">
+            <input type="text" id="searchInput" oninput="filterOrders()" placeholder="🔍 ابحث بالاسم، رقم الطلب، أو البوليصة (شامل الأرشيف)...">
             <div class="admin-btns">
                 <button onclick="toggleArchive()" class="btn-gray">📂 الأرشيف</button>
                 <button onclick="printAllToday()" class="btn-gold">⎙ طباعة كشف اليوم</button>
@@ -68,11 +75,11 @@
 
         <main class="lists-wrapper">
             <div class="list-col">
-                <h2 class="list-title">🛒 سلة</h2>
+                <h2 class="list-title">🛒 طلبات سلة</h2>
                 <div id="sallaList"></div>
             </div>
             <div class="list-col">
-                <h2 class="list-title">💬 واتساب</h2>
+                <h2 class="list-title">💬 طلبات واتساب</h2>
                 <div id="whatsappList"></div>
             </div>
         </main>
