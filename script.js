@@ -15,14 +15,14 @@ const today = new Date().toLocaleDateString('en-GB').replace(/\//g, '-');
 let currentUser = localStorage.getItem('loggedUser');
 let archiveMode = false;
 
-if (currentUser) showApp();
+if (currentUser) { showApp(); }
 
 function login() {
     const u = document.getElementById('username').value;
     const p = document.getElementById('password').value;
     const users = {"عمر":"111", "مريم":"222", "إبراهيم":"6410"};
     if(users[u] === p) { localStorage.setItem('loggedUser', u); location.reload(); }
-    else alert("بيانات خاطئة");
+    else alert("خطأ في الدخول");
 }
 
 function logout() { localStorage.clear(); location.reload(); }
@@ -34,36 +34,33 @@ function showApp() {
     loadData();
 }
 
-// استخراج البيانات - نسخة مطورة جداً
+// استخراج البيانات - نسخة محسنة لنص سلة المتداخل
 function processSmartPaste() {
-    let raw = document.getElementById('smartInput').value;
+    const raw = document.getElementById('smartInput').value;
     if(!raw) return;
 
-    // تنظيف النص من المسافات الزائدة جداً والأسطر الفارغة
-    let cleanText = raw.replace(/\n\s*\n/g, '\n').trim();
+    // تنظيف النص وتجزئته
+    const lines = raw.split('\n').map(l => l.trim()).filter(l => l !== "");
 
-    // 1. استخراج اسم العميل (السطر الذي يلي كلمة 'العميل')
-    let nameMatch = "";
-    let lines = cleanText.split('\n').map(l => l.trim());
-    let customerIndex = lines.findIndex(l => l === "العميل");
+    // 1. استخراج الاسم (السطر الذي يلي كلمة العميل)
+    let customerIndex = lines.indexOf("العميل");
     if(customerIndex !== -1 && lines[customerIndex+1]) {
-        nameMatch = lines[customerIndex+1];
+        document.getElementById('custName').value = lines[customerIndex+1];
     }
-    document.getElementById('custName').value = nameMatch;
 
-    // 2. استخراج رقم الطلب (بعد علامة #)
-    let idMatch = cleanText.match(/#(\d+)/);
+    // 2. استخراج رقم الطلب
+    const idMatch = raw.match(/#(\d+)/) || raw.match(/(\d{9})/);
     if(idMatch) document.getElementById('orderID').value = idMatch[1];
 
-    // 3. استخراج الإجمالي (قبل كلمة SAR)
-    let priceMatch = cleanText.match(/إجمالي الطلب[\s\S]*?(\d+)\s*SAR/);
+    // 3. استخراج السعر
+    const priceMatch = raw.match(/(\d+)\s*SAR/);
     if(priceMatch) document.getElementById('orderPrice').value = priceMatch[1];
 
     // 4. استخراج البوليصة (رقم الشحنة)
-    let trackMatch = cleanText.match(/رقم شحنة\s*(\d+)/) || cleanText.match(/Number\s*(\d+)/);
+    const trackMatch = raw.match(/برقم شحنة\s*(\d+)/) || raw.match(/Tracking Number\s*(\d+)/);
     if(trackMatch) document.getElementById('trackingID').value = trackMatch[1];
 
-    document.getElementById('orderType').value = "سلة";
+    alert("تم الاستخراج بنجاح ✅");
 }
 
 function saveOrder() {
@@ -73,20 +70,20 @@ function saveOrder() {
         trackingID: document.getElementById('trackingID').value,
         price: document.getElementById('orderPrice').value,
         emp: currentUser,
-        prepEmp: document.getElementById('prepEmp').value || "غير محدد",
+        prepEmp: document.getElementById('prepEmp').value || "لم يحدد",
         branch: document.getElementById('branchName').value,
-        delivery: document.getElementById('deliveryType').value,
-        type: document.getElementById('orderType').value,
         dateKey: today,
-        timestamp: Date.now()
+        time: new Date().toLocaleTimeString('ar-SA'),
+        type: "سلة" 
     };
 
-    if(!data.name) return alert("الاسم مفقود!");
-    
+    if(!data.name) return alert("يرجى إدخال الاسم!");
+
     db.ref('orders').push(data).then(() => {
         alert("تم الحفظ ✅");
-        document.getElementById('smartInput').value = "";
-        clearFields();
+        ["custName","orderID","trackingID","orderPrice","prepEmp","smartInput"].forEach(id => {
+            document.getElementById(id).value = "";
+        });
     });
 }
 
@@ -102,26 +99,21 @@ function loadData() {
             const o = child.val();
             if(o.dateKey === today) { count++; total += parseFloat(o.price || 0); }
 
-            const cardHtml = `
+            const card = `
                 <div class="order-card" data-search="${o.name} ${o.id} ${o.trackingID}">
-                    <div class="card-header-info">📅 ${o.dateKey} | 🕒 ${o.type}</div>
-                    <strong>${o.name}</strong>
-                    <div class="details">
-                        رقم الطلب: ${o.id} | البوليصة: ${o.trackingID || 'لا يوجد'}<br>
-                        بواسطة: ${o.emp} | التجهيز: ${o.prepEmp}<br>
-                        المبلغ: ${o.price} ريال | ${o.branch}
+                    <div class="card-top">📅 التاريخ: ${o.dateKey} | 🕒 ${o.time || ''}</div>
+                    <strong>👤 ${o.name}</strong>
+                    <div class="card-info">
+                        رقم الطلب: ${o.id} <br>
+                        البوليصة: ${o.trackingID || 'قيد الانتظار'} <br>
+                        المبلغ: ${o.price} ريال | الفرع: ${o.branch}
                     </div>
-                    <button onclick="deleteOrder('${child.key}')" style="background:none; border:none; color:red; cursor:pointer; float:left;">🗑️</button>
-                </div>
-            `;
+                    <button onclick="deleteOrder('${child.key}')" style="background:none; border:none; color:red; cursor:pointer; margin-top:10px;">🗑️ حذف</button>
+                </div>`;
 
-            // في حالة البحث الشامل أو اليوم أو الأرشيف
+            // منطق الأرشيف والظهور
             if (archiveMode || o.dateKey === today) {
-                o.type === "سلة" ? sList.insertAdjacentHTML('afterbegin', cardHtml) : wList.insertAdjacentHTML('afterbegin', cardHtml);
-            } else {
-                // مخفي للبحث الشامل
-                const hidden = cardHtml.replace('order-card"', 'order-card" style="display:none"');
-                o.type === "سلة" ? sList.insertAdjacentHTML('afterbegin', hidden) : wList.insertAdjacentHTML('afterbegin', hidden);
+                o.type === "سلة" ? sList.insertAdjacentHTML('afterbegin', card) : wList.insertAdjacentHTML('afterbegin', card);
             }
         });
         document.getElementById('countToday').innerText = count;
@@ -129,7 +121,14 @@ function loadData() {
     });
 }
 
-// البحث الشامل في كل الطلبات (اليوم والأرشيف)
+function toggleArchive() {
+    archiveMode = !archiveMode;
+    const btn = document.getElementById('archiveBtn');
+    btn.innerText = archiveMode ? "📂 إخفاء الأرشيف" : "📂 إظهار الأرشيف";
+    btn.style.background = archiveMode ? "#d4af37" : "#1a1a1a";
+    loadData();
+}
+
 function filterOrders() {
     const term = document.getElementById('searchInput').value.toLowerCase();
     const cards = document.querySelectorAll('.order-card');
@@ -139,13 +138,6 @@ function filterOrders() {
     });
 }
 
-function clearFields() {
-    ["custName","orderID","trackingID","orderPrice","prepEmp"].forEach(id => document.getElementById(id).value = "");
-}
-
-function toggleArchive() { archiveMode = !archiveMode; loadData(); }
-function deleteOrder(key) { if(confirm("حذف؟")) db.ref('orders/'+key).remove(); }
-
-function printAllToday() {
-    window.print(); // سيطبع المعروض حالياً في الصفحة بتنسيق المتصفح
+function deleteOrder(key) {
+    if(confirm("هل تريد الحذف؟")) db.ref('orders/'+key).remove();
 }
