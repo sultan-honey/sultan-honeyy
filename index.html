@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>سلطان العسل - نظام الطلبات</title>
+    <title>سلطان العسل - النظام الاحترافي</title>
     <link rel="stylesheet" href="style.css">
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
@@ -19,11 +19,19 @@
 
     <div id="appBody" class="app-container" style="display: none;">
         <header class="main-header">
-            <img src="1000031072.png" alt="شعار سلطان العسل" class="main-logo">
+            <img src="1000031072.png" alt="الشعار" class="main-logo">
             <h1 class="system-title">سلطان العسل</h1>
             <p id="userWelcome" class="system-subtitle"></p>
             <button onclick="logout()" class="btn-logout">تسجيل خروج ⬅️</button>
         </header>
+
+        <section class="smart-section">
+            <div class="smart-paste-box">
+                <p>✨ لصق سريع من (سلة/واتساب):</p>
+                <textarea id="smartInput" placeholder="انسخ نص الطلب كاملاً من سلة والصقه هنا..."></textarea>
+                <button onclick="processSmartPaste()" class="btn-smart">استخراج البيانات تلقائياً ⬇️</button>
+            </div>
+        </section>
 
         <section id="formArea" class="form-section">
             <div class="input-grid">
@@ -31,7 +39,7 @@
                 <input type="text" id="prepEmp" placeholder="👨‍🍳 مسؤول التجهيز">
                 <input type="text" id="orderID" placeholder="🔢 رقم الطلب">
                 <input type="text" id="trackingID" placeholder="📄 رقم البوليصة">
-                <input type="number" id="orderPrice" placeholder="💰 السعر">
+                <input type="number" id="orderPrice" placeholder="💰 السعر الإجمالي">
                 <select id="branchName">
                     <option value="فرع المحالة">📍 فرع المحالة</option>
                     <option value="فرع الروضة">📍 فرع الروضة</option>
@@ -49,6 +57,10 @@
             </div>
             <button onclick="saveOrder()" class="btn-primary">إضافة وحفظ الطلب ✅</button>
         </section>
+
+        <div class="search-section">
+            <input type="text" id="searchInput" onkeyup="filterOrders()" placeholder="🔍 ابحث برقم الطلب، اسم العميل، أو البوليصة...">
+        </div>
 
         <div id="adminActions" class="admin-actions">
             <button onclick="toggleArchive()" id="archiveBtn" class="btn-secondary">📂 سجل الأرشيف</button>
