@@ -3,83 +3,85 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>سلطان العسل | الإدارة</title>
+    <title>سلطان العسل - النظام المتكامل</title>
     <link rel="stylesheet" href="style.css">
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
 </head>
 <body>
 
-<div id="loginScreen" class="login-overlay">
-    <div class="login-box">
-        <img src="1000031072.png" class="login-logo">
-        <h2>تسجيل الدخول</h2>
-        <input type="text" id="username" placeholder="اسم المستخدم">
-        <input type="password" id="password" placeholder="كلمة المرور">
-        <button onclick="login()" class="btn-gold-action">دخول</button>
-    </div>
-</div>
-
-<div id="appBody" class="app-container" style="display:none;">
-    <header class="main-header">
-        <button onclick="logout()" class="btn-exit">خروج</button>
-        <div class="header-center">
-            <img src="1000031072.png" class="logo-small">
-            <h1>سلطان العسل</h1>
-        </div>
-        <div id="userWelcome"></div>
-    </header>
-
-    <div class="stats">
-        <div class="stat-card">📦 اليوم: <span id="countToday">0</span></div>
-        <div class="stat-card">💰 المبيعات: <span id="sumToday">0</span> ر.س</div>
-    </div>
-
-    <div class="smart-panel">
-        <div class="panel-header">✨ ذكاء اصطناعي لاستخراج بيانات سلة</div>
-        <textarea id="smartInput" placeholder="أدخل النص المنسوخ من سلة هنا..."></textarea>
-        <button onclick="processSmartPaste()" class="btn-process">استخراج البيانات ⚡</button>
-    </div>
-
-    <div class="order-form">
-        <div class="grid-inputs">
-            <div class="inp-group"><label>العميل</label><input type="text" id="custName"></div>
-            <div class="inp-group"><label>رقم الطلب</label><input type="text" id="orderID"></div>
-            <div class="inp-group"><label>البوليصة</label><input type="text" id="trackingID"></div>
-            <div class="inp-group"><label>السعر</label><input type="text" id="orderPrice"></div>
-            <div class="inp-group"><label>التجهيز</label><input type="text" id="prepEmp"></div>
-            <div class="inp-group">
-                <label>الفرع</label>
-                <select id="branchName">
-                    <option>فرع المحالة</option>
-                    <option>فرع الروضة</option>
-                    <option>فرع التعمير</option>
-                </select>
+    <div id="loginScreen" class="login-overlay">
+        <div class="login-box">
+            <img src="1000031072.png" class="login-logo">
+            <h2>تسجيل الدخول</h2>
+            <div class="login-fields">
+                <input type="text" id="username" placeholder="اسم المستخدم">
+                <input type="password" id="password" placeholder="كلمة المرور">
+                <button onclick="login()" class="btn-primary-gold">دخول للنظام</button>
             </div>
         </div>
-        <button onclick="saveOrder()" class="btn-save-order">حفظ الطلب الآن ✅</button>
     </div>
 
-    <div class="search-bar">
-        <input type="text" id="searchInput" oninput="filterOrders()" placeholder="🔍 ابحث في الكل (الاسم، الطلب، البوليصة)...">
-        <div class="buttons">
-            <button onclick="toggleArchive()" id="archiveBtn" class="btn-archive-toggle">📂 إظهار الأرشيف</button>
-            <button onclick="window.print()" class="btn-print">⎙ طباعة</button>
+    <div id="appBody" class="app-container" style="display: none;">
+        <header class="main-header">
+            <button onclick="logout()" class="btn-logout">خروج</button>
+            <div class="header-center">
+                <img src="1000031072.png" class="header-logo">
+                <h1 class="system-title">سلطان العسل</h1>
+            </div>
+            <div id="userWelcome"></div>
+        </header>
+
+        <section class="smart-paste-area">
+            <textarea id="smartInput" placeholder="الصق بيانات طلب سلة هنا..."></textarea>
+            <button onclick="processSmartPaste()" class="btn-extract">✨ استخراج البيانات الذكي</button>
+        </section>
+
+        <section class="form-section">
+            <div class="input-grid">
+                <input type="text" id="custName" placeholder="👤 اسم العميل">
+                <input type="text" id="orderID" placeholder="🔢 رقم الطلب">
+                <input type="text" id="trackingID" placeholder="📄 رقم البوليصة">
+                <input type="number" id="orderPrice" placeholder="💰 السعر الإجمالي">
+                <input type="text" id="prepEmp" placeholder="👨‍🍳 مسؤول التجهيز">
+                <select id="branchName">
+                    <option>📍 فرع المحالة</option>
+                    <option>📍 فرع الروضة</option>
+                    <option>📍 فرع التعمير</option>
+                </select>
+                <select id="deliveryType">
+                    <option>📦 شحن سمسا</option>
+                    <option>🛵 توصيل مندوب</option>
+                    <option>🏠 استلام فرع</option>
+                </select>
+                <select id="orderType">
+                    <option value="سلة">🛒 طلب سلة</option>
+                    <option value="واتساب">💬 طلب واتساب</option>
+                </select>
+            </div>
+            <button id="saveBtn" onclick="saveOrder()" class="btn-save">حفظ الطلب ✅</button>
+        </section>
+
+        <div class="tools-area">
+            <input type="text" id="searchInput" oninput="filterOrders()" placeholder="🔍 ابحث بالاسم، الرقم، أو البوليصة...">
+            <div class="admin-btns">
+                <button onclick="toggleArchive()" id="archiveBtn" class="btn-gray">📂 إظهار الأرشيف</button>
+                <button onclick="printAllToday()" class="btn-gold">⎙ طباعة كشف اليوم</button>
+            </div>
         </div>
+
+        <main class="lists-wrapper">
+            <div class="list-col">
+                <h2 class="list-title">🛒 طلبات سلة</h2>
+                <div id="sallaList"></div>
+            </div>
+            <div class="list-col">
+                <h2 class="list-title">💬 طلبات واتساب</h2>
+                <div id="whatsappList"></div>
+            </div>
+        </main>
     </div>
 
-    <div class="lists">
-        <div class="list-section">
-            <h3 class="salla-h">🛒 طلبات سلة</h3>
-            <div id="sallaList"></div>
-        </div>
-        <div class="list-section">
-            <h3 class="wa-h">💬 طلبات واتساب</h3>
-            <div id="whatsappList"></div>
-        </div>
-    </div>
-</div>
-
-<script src="script.js"></script>
+    <script src="script.js"></script>
 </body>
 </html>
