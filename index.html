@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>نظام سلطان العسل</title>
+    <title>نظام سلطان العسل - احترافي</title>
     <link rel="stylesheet" href="style.css">
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
@@ -13,10 +13,10 @@
     <div id="loginScreen" class="login-overlay">
         <div class="login-box">
             <img src="1000031072.png" alt="الشعار" class="login-logo">
-            <h2>تسجيل الدخول</h2>
+            <h2>تسجيل دخول الموظفين</h2>
             <input type="text" id="username" placeholder="اسم المستخدم">
             <input type="password" id="password" placeholder="كلمة المرور">
-            <button onclick="login()" class="btn-primary">دخول</button>
+            <button onclick="login()" class="btn-primary">دخول للنظام</button>
         </div>
     </div>
 
@@ -29,8 +29,8 @@
         </header>
 
         <section class="smart-paste-area">
-            <textarea id="smartInput" placeholder="الصق نص الطلب من سلة هنا..."></textarea>
-            <button onclick="processSmartPaste()" class="btn-extract">✨ استخراج البيانات وتعبئة النموذج</button>
+            <textarea id="smartInput" placeholder="الصق بيانات طلب سلة هنا بالكامل..."></textarea>
+            <button onclick="processSmartPaste()" class="btn-extract">✨ استخراج الإجمالي والبيانات</button>
         </section>
 
         <section class="form-section">
@@ -58,11 +58,11 @@
                     <option value="واتساب">💬 طلب واتساب</option>
                 </select>
             </div>
-            <button onclick="saveOrder()" class="btn-primary main-save">حفظ الطلب الآن ✅</button>
+            <button id="mainBtn" onclick="saveOrder()" class="btn-primary main-save">حفظ الطلب بنجاح ✅</button>
         </section>
 
         <div class="tools-area">
-            <input type="text" id="searchInput" oninput="loadData()" placeholder="🔍 ابحث بالاسم، رقم الطلب، أو البوليصة...">
+            <input type="text" id="searchInput" oninput="loadData()" placeholder="🔍 ابحث في اليوم والأرشيف...">
             <div class="admin-btns">
                 <button onclick="toggleArchive()" id="archiveBtn" class="btn-gray">📂 سجل الأرشيف</button>
                 <button onclick="printAllToday()" class="btn-gold">⎙ طباعة كشف اليوم</button>
