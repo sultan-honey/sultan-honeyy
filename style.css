@@ -1,46 +1,47 @@
-/* أضف هذه الأسطر في بداية ملف style.css */
+:root {
+    --gold: #b48608;
+    --dark-gold: #8e6a06;
+    --bg: #f4f4f4;
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, sans-serif; }
+body { background: var(--bg); direction: rtl; }
+
 .login-container { max-width: 350px; margin: 100px auto; background: white; padding: 30px; border-radius: 20px; text-align: center; box-shadow: 0 10px 30px rgba(0,0,0,0.1); }
-.login-logo { width: 120px; margin-bottom: 20px; }
-.login-container h2 { color: #b48608; margin-bottom: 20px; font-size: 20px; }
-.login-container input { margin-bottom: 15px; }
+.login-logo { width: 100px; margin-bottom: 20px; }
+.login-container input { width: 100%; padding: 12px; margin-bottom: 10px; border: 1px solid #ddd; border-radius: 10px; text-align: center; }
 
-.btn-logout { background: #ff4d4d; color: white; border: none; padding: 5px 12px; border-radius: 5px; font-size: 12px; cursor: pointer; margin-top: 10px; }
+.app-container { max-width: 1100px; margin: 20px auto; padding: 20px; }
+.main-header { background: white; padding: 20px; border-radius: 15px; text-align: center; position: relative; box-shadow: 0 4px 10px rgba(0,0,0,0.05); }
+.main-logo { width: 70px; }
+.system-title { color: var(--gold); margin: 5px 0; }
+.btn-logout { position: absolute; left: 20px; top: 20px; background: #ff4d4d; color: white; border: none; padding: 5px 12px; border-radius: 5px; cursor: pointer; }
 
-* { box-sizing: border-box; margin: 0; padding: 0; }
-body { font-family: 'Tahoma', sans-serif; background-color: #f8f9fa; padding: 15px; direction: rtl; }
+.smart-paste-box { background: #fffdf0; border: 2px dashed var(--gold); padding: 15px; border-radius: 15px; margin: 20px 0; text-align: center; }
+.smart-paste-box textarea { width: 100%; height: 70px; padding: 10px; border-radius: 10px; border: 1px solid #ddd; resize: none; margin-bottom: 10px; }
+.btn-smart { background: var(--gold); color: white; border: none; padding: 10px 20px; border-radius: 8px; cursor: pointer; width: 100%; font-weight: bold; }
 
-.app-container { max-width: 900px; margin: auto; background: #fff; padding: 20px; border-radius: 20px; box-shadow: 0 5px 20px rgba(0,0,0,0.05); }
+.form-section { background: white; padding: 20px; border-radius: 15px; box-shadow: 0 4px 10px rgba(0,0,0,0.05); }
+.input-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 10px; margin-bottom: 15px; }
+input, select { padding: 10px; border: 1px solid #eee; border-radius: 8px; outline: none; }
+.btn-primary { width: 100%; padding: 15px; background: #28a745; color: white; border: none; border-radius: 10px; font-weight: bold; cursor: pointer; }
 
-/* تنسيق الهيدر الجديد */
-.main-header { text-align: center; margin-bottom: 30px; }
-.main-logo { width: 100px; height: auto; margin-bottom: 10px; }
-.system-title { color: #b48608; font-size: 28px; font-weight: bold; }
-.system-subtitle { color: #888; font-size: 16px; margin-top: -5px; letter-spacing: 1px; }
+.search-section { margin: 20px 0; }
+.search-section input { width: 100%; padding: 15px; border-radius: 12px; border: 2px solid var(--gold); font-size: 16px; outline: none; }
 
-/* شبكة الإدخال المريحة */
-.form-section { background: #fffdf6; padding: 20px; border-radius: 15px; border: 1px solid #f1e6c9; margin-bottom: 20px; }
-.input-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 10px; margin-bottom: 15px; }
+.admin-actions { display: flex; gap: 10px; justify-content: center; margin-bottom: 20px; flex-wrap: wrap; }
+.btn-secondary { background: #6c757d; color: white; border: none; padding: 10px 20px; border-radius: 8px; cursor: pointer; }
+.btn-print-yellow { background: #ffc107; padding: 10px 20px; border-radius: 8px; border: none; cursor: pointer; font-weight: bold; }
+.btn-print-green { background: #17a2b8; color: white; padding: 10px 20px; border-radius: 8px; border: none; cursor: pointer; font-weight: bold; }
 
-input, select { padding: 10px; border: 1px solid #ddd; border-radius: 8px; font-size: 14px; outline: none; transition: 0.3s; }
-input:focus { border-color: #b48608; box-shadow: 0 0 5px rgba(180, 134, 8, 0.2); }
+.main-content { display: flex; gap: 20px; flex-wrap: wrap; }
+.list-column { flex: 1; min-width: 300px; }
+.section-title { color: var(--gold); border-bottom: 2px solid var(--gold); margin-bottom: 15px; padding-bottom: 5px; }
 
-.btn-primary { width: 100%; background: #b48608; color: #fff; border: none; padding: 12px; border-radius: 8px; font-weight: bold; font-size: 16px; cursor: pointer; }
-.btn-secondary { background: #007bff; color: white; border: none; padding: 10px; border-radius: 8px; width: 100%; margin: 15px 0; cursor: pointer; font-weight: bold; }
-
-.print-grid-actions { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
-.btn-print-yellow { background: #6c757d; color: white; border: none; padding: 10px; border-radius: 8px; font-weight: bold; cursor: pointer; }
-.btn-print-green { background: #b48608; color: white; border: none; padding: 12px; border-radius: 8px; font-weight: bold; cursor: pointer; grid-column: span 2; margin-top: 5px; }
-
-/* تقسيم الصفحة لعمودين للطلبات */
-.main-content { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-top: 20px; }
-@media (max-width: 600px) { .main-content { grid-template-columns: 1fr; } }
-
-.section-title { font-size: 18px; color: #333; margin-bottom: 15px; border-bottom: 2px solid #b48608; padding-bottom: 5px; display: inline-block; }
-
-.order-card { background: #fff; padding: 15px; border-radius: 12px; margin-bottom: 12px; border-right: 5px solid #b48608; position: relative; box-shadow: 0 2px 8px rgba(0,0,0,0.08); }
-.order-card strong { font-size: 16px; color: #b48608; display: block; margin-bottom: 8px; }
+.order-card { background: white; padding: 15px; border-radius: 12px; margin-bottom: 10px; position: relative; border-right: 5px solid var(--gold); box-shadow: 0 2px 5px rgba(0,0,0,0.05); }
+.btn-delete { position: absolute; left: 10px; top: 10px; color: #ff4d4d; border: none; background: none; font-size: 18px; cursor: pointer; }
+.btn-print-single { position: absolute; left: 70px; top: 10px; background: none; border: none; font-size: 18px; cursor: pointer; color: #666; }
 .card-details { font-size: 13px; color: #555; line-height: 1.6; }
-.date-badge { font-size: 11px; color: #999; display: block; margin-top: 10px; border-top: 1px solid #eee; padding-top: 5px; }
+.date-badge { font-size: 11px; color: #999; display: block; margin-top: 5px; }
 
-.btn-delete { position: absolute; left: 10px; top: 10px; color: #ff4d4d; border: none; background: none; font-size: 18px; cursor: pointer; opacity: 0.6; }
-.btn-print-single { position: absolute; left: 35px; top: 10px; background: none; border: none; color: #b48608; font-size: 18px; cursor: pointer; }
+@media (max-width: 768px) { .main-content { flex-direction: column; } }
