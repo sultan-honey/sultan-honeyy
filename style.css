@@ -1,46 +1,37 @@
-:root { --gold: #b48608; --soft-gold: #fffdf2; --bg: #f4f7f6; }
+:root { --gold: #b48608; --bg: #f8f9fa; }
 * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', sans-serif; }
 body { background: var(--bg); direction: rtl; text-align: right; }
 
-/* شاشة الدخول */
-.login-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #fff; display: flex; align-items: center; justify-content: center; z-index: 2000; }
-.login-box { text-align: center; padding: 40px; background: #fff; box-shadow: 0 10px 30px rgba(0,0,0,0.1); border-radius: 20px; width: 320px; }
-.login-logo { width: 100px; margin-bottom: 20px; }
-.login-box input { width: 100%; padding: 12px; margin-bottom: 10px; border-radius: 10px; border: 1px solid #ddd; text-align: center; }
+.login-overlay { position: fixed; inset: 0; background: white; display: flex; align-items: center; justify-content: center; z-index: 1000; }
+.login-box { text-align: center; padding: 30px; box-shadow: 0 5px 20px rgba(0,0,0,0.1); border-radius: 15px; width: 300px; }
+.login-logo { width: 80px; margin-bottom: 15px; }
+.login-box input { width: 100%; padding: 10px; margin-bottom: 10px; border-radius: 8px; border: 1px solid #ddd; }
 
-/* الحاوية الرئيسية */
-.app-container { max-width: 1000px; margin: 0 auto; padding: 15px; }
+.app-container { max-width: 900px; margin: auto; padding: 15px; }
+.main-header { background: white; padding: 15px; border-radius: 15px; text-align: center; position: relative; margin-bottom: 15px; box-shadow: 0 2px 5px rgba(0,0,0,0.05); }
+.header-logo { width: 50px; }
+.btn-logout { position: absolute; left: 10px; top: 10px; background: #ff4757; color: white; border: none; padding: 5px 10px; border-radius: 5px; cursor: pointer; }
 
-/* الهيدر */
-.main-header { background: white; padding: 20px; border-radius: 15px; text-align: center; box-shadow: 0 2px 10px rgba(0,0,0,0.05); margin-bottom: 20px; position: relative; }
-.header-logo { width: 60px; }
-.btn-logout { position: absolute; left: 15px; top: 15px; background: #ff4757; color: white; border: none; padding: 6px 12px; border-radius: 8px; cursor: pointer; }
-.stats-row { display: flex; justify-content: center; gap: 8px; margin-top: 10px; flex-wrap: wrap; }
-.st-badge { background: #fff9db; border: 1px solid var(--gold); padding: 4px 12px; border-radius: 20px; font-size: 12px; font-weight: bold; }
-
-/* صندوق الاستخراج */
-.smart-paste-area { background: var(--soft-gold); border: 2px dashed var(--gold); padding: 15px; border-radius: 15px; margin-bottom: 20px; }
-textarea { width: 100%; height: 60px; padding: 10px; border-radius: 10px; border: 1px solid #ddd; resize: none; margin-bottom: 10px; }
+.smart-paste-area { background: #fffdf2; border: 2px dashed var(--gold); padding: 10px; border-radius: 10px; margin-bottom: 15px; }
+textarea { width: 100%; height: 50px; padding: 8px; border-radius: 8px; border: 1px solid #ddd; margin-bottom: 8px; }
 .btn-extract { width: 100%; background: var(--gold); color: white; border: none; padding: 10px; border-radius: 8px; font-weight: bold; cursor: pointer; }
 
-/* الحقول كأزواج */
-.input-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 15px; }
-input, select { padding: 12px; border-radius: 10px; border: 1px solid #ddd; font-size: 14px; width: 100%; }
-.btn-primary { background: #28a745; color: white; border: none; padding: 15px; border-radius: 12px; font-weight: bold; cursor: pointer; width: 100%; }
+.input-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 10px; }
+input, select { padding: 10px; border-radius: 8px; border: 1px solid #ddd; width: 100%; }
+.btn-primary { background: #28a745; color: white; border: none; padding: 12px; border-radius: 10px; font-weight: bold; cursor: pointer; width: 100%; }
 
-/* البحث والطباعة */
-#searchInput { width: 100%; padding: 12px; border-radius: 10px; border: 1px solid #ddd; margin: 20px 0; }
-.admin-btns { display: flex; gap: 10px; margin-bottom: 20px; }
-.admin-btns button { flex: 1; padding: 12px; border-radius: 8px; border: none; color: white; font-weight: bold; cursor: pointer; }
+.tools-area { margin-top: 20px; }
+#searchInput { width: 100%; padding: 10px; border-radius: 8px; border: 1px solid #ddd; margin-bottom: 10px; }
+.admin-btns { display: flex; gap: 10px; margin-bottom: 15px; }
+.admin-btns button { flex: 1; padding: 10px; border-radius: 8px; border: none; color: white; font-weight: bold; cursor: pointer; }
 .btn-gold { background: var(--gold); }
 .btn-gray { background: #6c757d; }
 
-/* كروت الطلبات */
-.lists-wrapper { display: flex; gap: 20px; flex-wrap: wrap; }
-.list-col { flex: 1; min-width: 320px; }
-.order-card { background: white; padding: 15px; border-radius: 12px; margin-bottom: 10px; border-right: 5px solid var(--gold); position: relative; box-shadow: 0 2px 5px rgba(0,0,0,0.05); }
-.card-tools { position: absolute; left: 10px; top: 10px; display: flex; gap: 8px; }
-.card-tools button { background: none; border: none; cursor: pointer; font-size: 18px; }
-.card-info { display: grid; grid-template-columns: 1fr 1fr; gap: 5px; font-size: 13px; color: #555; margin-top: 15px; }
+.lists-wrapper { display: flex; gap: 15px; flex-wrap: wrap; }
+.list-col { flex: 1; min-width: 300px; }
+.order-card { background: white; padding: 15px; border-radius: 10px; margin-bottom: 10px; border-right: 5px solid var(--gold); position: relative; box-shadow: 0 2px 5px rgba(0,0,0,0.05); }
+.card-tools { position: absolute; left: 10px; top: 10px; }
+.card-tools button { background: none; border: none; cursor: pointer; font-size: 16px; margin-right: 5px; }
+.card-info { font-size: 13px; color: #444; margin-top: 10px; line-height: 1.6; }
 
-@media (max-width: 600px) { .input-grid { grid-template-columns: 1fr; } }
+@media (max-width: 500px) { .input-grid { grid-template-columns: 1fr; } }
