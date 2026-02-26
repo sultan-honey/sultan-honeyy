@@ -21,7 +21,7 @@
         <header class="main-header">
             <img src="1000031072.png" alt="الشعار" class="main-logo">
             <h1 class="system-title">سلطان العسل</h1>
-            <p id="userWelcome" class="system-subtitle"></p>
+            <div id="userWelcome" class="stats-container"></div> 
             <button onclick="logout()" class="btn-logout">تسجيل خروج ⬅️</button>
         </header>
 
@@ -40,16 +40,19 @@
                 <input type="text" id="orderID" placeholder="🔢 رقم الطلب">
                 <input type="text" id="trackingID" placeholder="📄 رقم البوليصة">
                 <input type="number" id="orderPrice" placeholder="💰 السعر الإجمالي">
+                
                 <select id="branchName">
                     <option value="فرع المحالة">📍 فرع المحالة</option>
                     <option value="فرع الروضة">📍 فرع الروضة</option>
                     <option value="فرع التعمير">📍 فرع التعمير</option>
                 </select>
+
                 <select id="deliveryType">
                     <option value="توصيل مندوب">🛵 توصيل مندوب</option>
                     <option value="شحن سمسا">📦 شحن سمسا</option>
                     <option value="استلام من الفرع">🏠 استلام من الفرع</option>
                 </select>
+
                 <select id="orderType">
                     <option value="سلة">🛒 طلب سلة</option>
                     <option value="واتساب">💬 طلب واتساب</option>
@@ -59,15 +62,13 @@
         </section>
 
         <div class="search-section">
-            <input type="text" id="searchInput" onkeyup="filterOrders()" placeholder="🔍 ابحث برقم الطلب، اسم العميل، أو البوليصة...">
+            <input type="text" id="searchInput" oninput="loadData()" placeholder="🔍 ابحث برقم الطلب، اسم العميل، أو البوليصة (شامل الأرشيف)...">
         </div>
 
         <div id="adminActions" class="admin-actions">
             <button onclick="toggleArchive()" id="archiveBtn" class="btn-secondary">📂 سجل الأرشيف</button>
-            <div class="print-grid-actions">
-                <button id="printMyOrders" onclick="printMyOrders()" class="btn-print-yellow">⎙ طباعة طلباتي</button>
-                <button id="printAllBtn" onclick="printAllToday()" class="btn-print-green">⎙ طباعة كل طلبات اليوم</button>
-            </div>
+            <button id="printMyOrders" onclick="printMyOrders()" class="btn-print-yellow">⎙ طباعة طلباتي</button>
+            <button id="printAllBtn" onclick="printAllToday()" class="btn-print-green">⎙ طباعة كل طلبات اليوم</button>
         </div>
 
         <main id="printArea" class="main-content">
@@ -81,6 +82,7 @@
             </div>
         </main>
     </div>
+
     <script src="script.js"></script>
 </body>
 </html>
