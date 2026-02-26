@@ -29,7 +29,7 @@ function login() {
         localStorage.setItem('loggedUser', user);
         localStorage.setItem('userRole', userRole);
         location.reload();
-    } else { alert("خطأ في البيانات"); }
+    } else { alert("خطأ في بيانات الدخول"); }
 }
 
 function logout() { localStorage.clear(); location.reload(); }
@@ -41,7 +41,7 @@ function showApp() {
     loadData(); 
 }
 
-// --- استخراج البيانات الذكي المطور (حل مشكلة التداخل) ---
+// استخراج البيانات الذكي (حل مشكلة السعر 275 والأسماء الزائدة)
 function processSmartPaste() {
     const text = document.getElementById('smartInput').value;
     if (!text) return;
@@ -50,7 +50,7 @@ function processSmartPaste() {
     const priceMatch = text.match(/إجمالي الطلب\s*[\n\r]*\s*.*?\s*(\d+(?:\.\d+)?)/);
     if (priceMatch) document.getElementById('orderPrice').value = priceMatch[1];
 
-    // 2. استخراج الاسم وتنظيفه من كلمات النظام (الرئيسية، المنتجات، إلخ)
+    // 2. استخراج الاسم وتنظيفه من كلمات القوائم
     const nameMatch = text.match(/منذ \d+ ساعات?\s*([\u0600-\u06FF\s]+)/) || 
                      text.match(/(?:العميل)\s*[\n\r]*\s*.*?\s*([\u0600-\u06FF\s]+)/) ||
                      text.match(/(.+)\n\+966/);
@@ -58,7 +58,6 @@ function processSmartPaste() {
     if (nameMatch) {
         let cleanName = nameMatch[1]
             .replace(/الرئيسية|المنتجات|الطلبات|العملاء|سلة|سلطان العسل|برو|موظف الطلب/g, "")
-            .replace(/\s+/g, ' ') // إزالة المسافات الزائدة
             .trim();
         document.getElementById('custName').value = cleanName;
     }
@@ -68,7 +67,7 @@ function processSmartPaste() {
     if (idMatch) document.getElementById('orderID').value = idMatch[1];
 
     document.getElementById('orderType').value = "سلة";
-    alert("تم الاستخراج وتنظيف الاسم ✅");
+    alert("تم استخراج البيانات وتنظيف الاسم ✅");
 }
 
 function loadData() {
@@ -82,15 +81,15 @@ function loadData() {
             if (!archiveMode && o.dateKey !== today) return;
 
             const card = `
-                <div class="order-card">
-                    <div class="card-tools">
+                <div class="order-card" id="${child.key}">
+                    <div class="card-tools" style="position:absolute; left:10px; top:10px;">
                         <button onclick="smartDelete('${child.key}')">🗑️</button>
                         <button onclick="editOrder('${child.key}')">📝</button>
-                        <button onclick="printOrder('${child.key}')">⎙</button>
+                        <button onclick="printSingleOrder('${child.key}')">⎙</button>
                     </div>
                     <strong>👤 ${o.name}</strong>
-                    <div class="card-info">
-                        <span>🏷️ الموظف: ${o.emp}</span><br>
+                    <div class="card-details">
+                        <span>🏷️ الموظف: ${o.emp}</span> | 👨‍🍳 تجهيز: ${o.prepEmp}<br>
                         <span>🔢 طلب: ${o.id}</span> | 💰 ${o.price} ر.س<br>
                         <span>📄 بوليصة: ${o.trackingID || '---'}</span><br>
                         <span style="color:#b48608; font-weight:bold;">📑 النوع: ${o.type}</span>
@@ -101,7 +100,41 @@ function loadData() {
     });
 }
 
-function printOrder(key) {
+// --- إصلاح زر طباعة كشف اليوم ---
+function printAllToday() {
+    const sallaContent = document.getElementById('sallaList').innerHTML;
+    const whatsappContent = document.getElementById('whatsappList').innerHTML;
+    
+    if (!sallaContent && !whatsappContent) return alert("لا توجد طلبات لطباعتها اليوم!");
+
+    const win = window.open('', '', 'width=900,height=800');
+    win.document.write(`
+        <html dir="rtl">
+        <head>
+            <title>كشف طلبات اليوم - سلطان العسل</title>
+            <style>
+                body { font-family: Tahoma; padding: 20px; }
+                .header { text-align: center; border-bottom: 2px solid #b48608; margin-bottom: 20px; }
+                .order-card { border: 4px double #b48608; padding: 15px; margin-bottom: 15px; border-radius: 10px; page-break-inside: avoid; }
+                .card-tools { display: none; } /* إخفاء أزرار الحذف والتعديل عند الطباعة */
+                .title { background: #fdfae5; padding: 5px; text-align: center; border: 1px solid #b48608; margin-top: 20px; }
+            </style>
+        </head>
+        <body>
+            <div class="header"><h1>📦 كشف طلبات اليوم: ${today}</h1></div>
+            <h2 class="title">🛒 طلبات سلة</h2>
+            ${sallaContent || '<p>لا توجد طلبات</p>'}
+            <h2 class="title">💬 طلبات واتساب</h2>
+            ${whatsappContent || '<p>لا توجد طلبات</p>'}
+        </body>
+        </html>
+    `);
+    win.document.close();
+    setTimeout(() => { win.print(); win.close(); }, 500);
+}
+
+// طباعة طلب واحد ببرواز ذهبي
+function printSingleOrder(key) {
     db.ref('orders/' + key).once('value', s => {
         const o = s.val();
         const win = window.open('', '', 'width=800,height=700');
@@ -117,7 +150,7 @@ function printOrder(key) {
                         <b>رقم الطلب:</b> ${o.id}<br>
                         <b>الإجمالي:</b> ${o.price} ريال<br>
                         <b>الموظف:</b> ${o.emp}<br>
-                        <b>تجهيز:</b> ${o.prepName || o.prepEmp || 'غير محدد'}
+                        <b>تجهيز:</b> ${o.prepEmp}
                     </div>
                 </div>
             </body>`);
@@ -140,17 +173,14 @@ function saveOrder() {
         time: new Date().toLocaleTimeString('ar-SA')
     };
     if (editKey) {
-        db.ref('orders/' + editKey).update(data).then(() => { alert("تم التحديث"); resetForm(); });
+        db.ref('orders/' + editKey).update(data).then(() => { alert("تم التحديث ✅"); resetForm(); });
     } else {
         db.ref('orders').push(data).then(() => { alert("تم الحفظ ✅"); resetForm(); });
     }
 }
 
 function smartDelete(key) {
-    const p = prompt("أدخل كلمة مرور الموظف للحذف:");
-    if (p === users[currentUser]) {
-        if(confirm("حذف الطلب؟")) db.ref('orders/' + key).remove();
-    } else { alert("كلمة السر خطأ"); }
+    if (confirm("هل أنت متأكد من حذف هذا الطلب؟")) db.ref('orders/' + key).remove();
 }
 
 function editOrder(key) {
