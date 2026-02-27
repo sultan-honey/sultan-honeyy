@@ -3,84 +3,61 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>سلطان العسل - النظام الاحترافي</title>
+    <title>سلطان العسل - النظام السحابي</title>
     <link rel="stylesheet" href="style.css">
-    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-database-compat.js"></script>
 </head>
 <body>
-    <div id="loginScreen" class="login-container">
-        <img src="1000031072.png" alt="الشعار" class="login-logo">
-        <h2>تسجيل الدخول للنظام</h2>
-        <input type="text" id="username" placeholder="اسم المستخدم">
-        <input type="password" id="password" placeholder="كلمة المرور">
-        <button onclick="login()" class="btn-primary">دخول</button>
+
+<div class="container">
+    <div class="header">
+        <img src="1000031072.png" alt="شعار سلطان العسل">
+        <h2 id="pageTitle">نظام سلطان العسل - طلبات اليوم</h2>
+        <h3 id="archiveTitle" class="archive-mode-title">جاري عرض (الأرشيف الكامل)</h3>
     </div>
 
-    <div id="appBody" class="app-container" style="display: none;">
-        <header class="main-header">
-            <img src="1000031072.png" alt="الشعار" class="main-logo">
-            <h1 class="system-title">سلطان العسل</h1>
-            <p id="userWelcome" class="system-subtitle"></p>
-            <button onclick="logout()" class="btn-logout">تسجيل خروج ⬅️</button>
-        </header>
-
-        <section class="smart-section">
-            <div class="smart-paste-box">
-                <p>✨ لصق سريع من (سلة/واتساب):</p>
-                <textarea id="smartInput" placeholder="انسخ نص الطلب كاملاً من سلة والصقه هنا..."></textarea>
-                <button onclick="processSmartPaste()" class="btn-smart">استخراج البيانات تلقائياً ⬇️</button>
-            </div>
-        </section>
-
-        <section id="formArea" class="form-section">
-            <div class="input-grid">
-                <input type="text" id="custName" placeholder="👤 اسم العميل">
-                <input type="text" id="prepEmp" placeholder="👨‍🍳 مسؤول التجهيز">
-                <input type="text" id="orderID" placeholder="🔢 رقم الطلب">
-                <input type="text" id="trackingID" placeholder="📄 رقم البوليصة">
-                <input type="number" id="orderPrice" placeholder="💰 السعر الإجمالي">
-                <select id="branchName">
-                    <option value="فرع المحالة">📍 فرع المحالة</option>
-                    <option value="فرع الروضة">📍 فرع الروضة</option>
-                    <option value="فرع التعمير">📍 فرع التعمير</option>
-                </select>
-                <select id="deliveryType">
-                    <option value="توصيل مندوب">🛵 توصيل مندوب</option>
-                    <option value="شحن سمسا">📦 شحن سمسا</option>
-                    <option value="استلام من الفرع">🏠 استلام من الفرع</option>
-                </select>
-                <select id="orderType">
-                    <option value="سلة">🛒 طلب سلة</option>
-                    <option value="واتساب">💬 طلب واتساب</option>
-                </select>
-            </div>
-            <button onclick="saveOrder()" class="btn-primary">إضافة وحفظ الطلب ✅</button>
-        </section>
-
-        <div class="search-section">
-            <input type="text" id="searchInput" onkeyup="filterOrders()" placeholder="🔍 ابحث برقم الطلب، اسم العميل، أو البوليصة...">
-        </div>
-
-        <div id="adminActions" class="admin-actions">
-            <button onclick="toggleArchive()" id="archiveBtn" class="btn-secondary">📂 سجل الأرشيف</button>
-            <div class="print-grid-actions">
-                <button id="printMyOrders" onclick="printMyOrders()" class="btn-print-yellow">⎙ طباعة طلباتي</button>
-                <button id="printAllBtn" onclick="printAllToday()" class="btn-print-green">⎙ طباعة كل طلبات اليوم</button>
-            </div>
-        </div>
-
-        <main id="printArea" class="main-content">
-            <div class="list-column">
-                <h2 class="section-title">🛒 طلبات سلة</h2>
-                <div id="sallaList" class="list-container"></div>
-            </div>
-            <div class="list-column">
-                <h2 class="section-title">💬 طلبات واتساب</h2>
-                <div id="whatsappList" class="list-container"></div>
-            </div>
-        </main>
+    <div class="input-section no-print">
+        <input type="text" id="custName" placeholder="اسم العميل">
+        <input type="text" id="orderID" placeholder="رقم الطلب">
+        <input type="number" id="orderPrice" placeholder="السعر">
+        <select id="empName">
+            <option value="">الموظف</option>
+            <option value="عمر">عمر</option>
+            <option value="مريم">مريم</option>
+        </select>
+        <select id="branchName">
+            <option value="المحاله">فرع المحاله</option>
+            <option value="الروضة">فرع الروضة</option>
+            <option value="التعمير">فرع التعمير</option>
+        </select>
+        <input type="text" id="deliveryType" placeholder="نوع التوصيل">
+        <select id="orderType">
+            <option value="سلة">سلة</option>
+            <option value="واتس">واتساب</option>
+        </select>
+        <button class="btn-main" onclick="saveOrder()">إضافة الطلب +</button>
     </div>
-    <script src="script.js"></script>
+
+    <div class="print-controls no-print">
+        <button id="archiveBtn" class="btn-archive" onclick="toggleArchive()">📂 فتح الأرشيف الكامل</button>
+        <button class="btn-print" onclick="window.print()">طباعة المعروض</button>
+        <button class="btn-print" onclick="printByEmp('عمر')">طلبات عمر</button>
+        <button class="btn-print" onclick="printByEmp('مريم')">طلبات مريم</button>
+    </div>
+
+    <div class="dashboard">
+        <div class="column">
+            <h3>📦 طلبات سلة</h3>
+            <div id="sallaList"></div>
+        </div>
+        <div class="column">
+            <h3>💬 طلبات الواتساب</h3>
+            <div id="whatsappList"></div>
+        </div>
+    </div>
+</div>
+
+<script src="script.js"></script>
 </body>
 </html>
