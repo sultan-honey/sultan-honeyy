@@ -41,29 +41,47 @@ function showApp() {
     loadData(); 
 }
 
+// --- الدالة المحدثة لاستخراج البيانات بدقة ---
 function processSmartPaste() {
     const text = document.getElementById('smartInput').value;
-    if (!text) return;
+    if (!text) return alert("الخانة فارغة! الصق نص الطلب أولاً.");
 
-    const priceMatch = text.match(/إجمالي الطلب\s*[\n\r]*\s*.*?\s*(\d+(?:\.\d+)?)/);
-    if (priceMatch) document.getElementById('orderPrice').value = priceMatch[1];
-
-    const nameMatch = text.match(/منذ \d+ ساعات?\s*([\u0600-\u06FF\s]+)/) || 
-                     text.match(/(?:العميل)\s*[\n\r]*\s*.*?\s*([\u0600-\u06FF\s]+)/) ||
-                     text.match(/(.+)\n\+966/);
-    
-    if (nameMatch) {
-        let cleanName = nameMatch[1]
-            .replace(/الرئيسية|المنتجات|الطلبات|العملاء|سلة|سلطان العسل|برو|موظف الطلب/g, "")
-            .trim();
-        document.getElementById('custName').value = cleanName;
-    }
-
+    // 1. استخراج رقم الطلب
     const idMatch = text.match(/(?:#|طلب رقم|الطلب)\s*(\d{7,15})/);
     if (idMatch) document.getElementById('orderID').value = idMatch[1];
 
+    // 2. استخراج السعر الإجمالي (آخر سعر يظهر قبل SAR أو ريال)
+    const priceMatches = text.match(/(\d+(?:\.\d+)?)\s*(?:SAR|ريال|ر\.س)/g);
+    if (priceMatches) {
+        const lastPrice = priceMatches[priceMatches.length - 1].match(/(\d+(?:\.\d+)?)/);
+        document.getElementById('orderPrice').value = lastPrice[0];
+    }
+
+    // 3. استخراج اسم العميل (أدق طريقة)
+    // يبحث عن السطر الذي يسبق رقم الجوال مباشرة (+966)
+    const nameMatch = text.match(/(.+)\n\+966/);
+    if (nameMatch) {
+        document.getElementById('custName').value = nameMatch[1].trim();
+    } else {
+        // محاولة ثانية: البحث تحت كلمة "العميل"
+        const altNameMatch = text.match(/العميل\s*\n\s*(.+)/);
+        if (altNameMatch) document.getElementById('custName').value = altNameMatch[1].trim();
+    }
+
+    // 4. استخراج رقم البوليصة / الشحنة
+    const trackingMatch = text.match(/(?:رقم شحنة|شحنة برقم|بوليصة|شحن|تتبع)\s*[:#]?\s*(\d{10,15})/);
+    if (trackingMatch) {
+        document.getElementById('trackingID').value = trackingMatch[1];
+    }
+
+    // 5. تحديد نوع الطلب تلقائياً
     document.getElementById('orderType').value = "سلة";
-    alert("تم استخراج البيانات وتنظيف الاسم ✅");
+    if (text.includes("شحن") || text.includes("أوتو")) {
+        document.getElementById('deliveryType').value = "شحن سمسا";
+    }
+
+    alert("تم استخراج البيانات بدقة ✅");
+    document.getElementById('smartInput').value = ""; // تفريغ الخانة
 }
 
 function loadData() {
@@ -127,6 +145,7 @@ function printSingleOrder(key) {
                         <b>العميل:</b> ${o.name}<br>
                         <b>رقم الطلب:</b> ${o.id}<br>
                         <b>الإجمالي:</b> ${o.price} ريال<br>
+                        <b>البوليصة:</b> ${o.trackingID || '---'}<br>
                         <b>التاريخ:</b> ${o.dateKey}
                     </div>
                 </div>
@@ -163,6 +182,7 @@ function editOrder(key) {
         document.getElementById('orderID').value = o.id;
         document.getElementById('orderPrice').value = o.price;
         document.getElementById('prepEmp').value = o.prepEmp;
+        document.getElementById('trackingID').value = o.trackingID; // إضافة حقل البوليصة للتعديل
         document.getElementById('saveBtn').innerText = "تحديث الطلب الآن 🔄";
         window.scrollTo(0,0);
     });
