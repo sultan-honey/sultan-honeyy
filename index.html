@@ -2,80 +2,77 @@
 <html lang="ar" dir="rtl">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>سلطان العسل - النظام المطور</title>
+    <title>نظام سلطان العسل المتكامل</title>
     <link rel="stylesheet" href="style.css">
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
 </head>
 <body>
 
-    <div id="loginScreen" class="login-overlay">
-        <div class="login-box">
-            <img src="1000031072.png" class="login-logo">
-            <h2>تسجيل دخول</h2>
-            <input type="text" id="username" placeholder="اسم المستخدم">
+    <div id="loginPage" class="login-page">
+        <div class="login-card">
+            <img src="1000031072.png">
+            <h2>سلطان العسل</h2>
+            <input type="text" id="username" placeholder="اسم الموظف">
             <input type="password" id="password" placeholder="كلمة المرور">
-            <button onclick="login()" class="btn-primary">دخول</button>
+            <button onclick="login()" style="width:100%; padding:15px; background:#28a745; color:white; border:none; border-radius:12px; cursor:pointer; font-weight:bold;">دخول للنظام</button>
         </div>
     </div>
 
-    <div id="appBody" class="app-container" style="display: none;">
+    <div id="appBody" style="display:none;" class="app-container">
         <header class="main-header">
-            <button onclick="logout()" class="btn-logout">خروج</button>
-            <img src="1000031072.png" class="header-logo">
-            <h1 class="system-title">سلطان العسل</h1>
-            <div id="userWelcome"></div>
+            <h2>🍯 سلطان العسل</h2>
+            <div>الموظف الحالي: <span id="displayName" class="user-badge"></span> 
+            <button onclick="logout()" style="background:#dc3545; color:white; border:none; padding:8px 15px; border-radius:10px; cursor:pointer; margin-right:10px;">خروج</button></div>
         </header>
 
-        <section class="smart-paste-area">
-            <textarea id="smartInput" placeholder="الصق بيانات طلب سلة هنا..."></textarea>
-            <button onclick="processSmartPaste()" class="btn-extract">✨ استخراج البيانات والإجمالي</button>
-        </section>
+        <div class="stats-container">
+            <div class="stat-card admin-only"><h3>إجمالي طلبات اليوم</h3><p id="statTotalOrders">0</p></div>
+            <div class="stat-card admin-only"><h3>إجمالي مبيعات اليوم</h3><p id="statTotalSales">0</p></div>
+            <div class="stat-card omar"><h3>مبيعات عمر</h3><p id="statOmar">0</p></div>
+            <div class="stat-card maryam"><h3>مبيعات مريم</h3><p id="statMaryam">0</p></div>
+        </div>
+
+        <div class="filter-bar">
+            <span>التاريخ:</span>
+            <input type="date" id="calendarFilter" onchange="loadData()">
+            <input type="text" id="searchInput" onkeyup="loadData()" placeholder="🔍 ابحث بالاسم أو رقم الطلب في الأرشيف..." style="flex:1;">
+            <button onclick="printAllToday()" class="btn-print-all">⎙ طباعة كافة طلبات اليوم</button>
+        </div>
 
         <section class="form-section">
+            <textarea id="smartInput" oninput="processSmartPaste()" placeholder="الصق نص سلة هنا للاستخراج التلقائي..."></textarea>
             <div class="input-grid">
-                <input type="text" id="custName" placeholder="👤 اسم العميل">
-                <input type="text" id="prepEmp" placeholder="👨‍🍳 مسؤول التجهيز">
-                <input type="text" id="orderID" placeholder="🔢 رقم الطلب">
-                <input type="text" id="trackingID" placeholder="📄 رقم البوليصة">
-                <input type="number" id="orderPrice" placeholder="💰 السعر الإجمالي">
-                <select id="branchName">
-                    <option>📍 فرع المحالة</option>
-                    <option>📍 فرع الروضة</option>
-                    <option>📍 فرع التعمير</option>
-                </select>
+                <input type="text" id="custName" placeholder="اسم العميل الكامل">
+                <input type="text" id="orderID" placeholder="رقم الطلب">
+                <input type="text" id="trackingID" placeholder="رقم البوليصة">
+                <input type="number" id="orderPrice" placeholder="الإجمالي (ريال)">
+                <input type="text" id="prepEmp" placeholder="مسؤول التجهيز">
+                
                 <select id="deliveryType">
-                    <option>🛵 توصيل مندوب</option>
-                    <option>📦 شحن سمسا</option>
-                    <option>🏠 استلام فرع</option>
+                    <option value="شحن سمسا">📦 شحن سمسا</option>
+                    <option value="توصيل مندوب">🛵 توصيل مندوب</option>
+                    <option value="استلام من الفرع">🏪 استلام من الفرع</option>
                 </select>
+
+                <select id="branchName">
+                    <option value="فرع المحالة">📍 فرع المحالة</option>
+                    <option value="فرع الروضة">📍 فرع الروضة</option>
+                    <option value="فرع التعمير">📍 فرع التعمير</option>
+                </select>
+
                 <select id="orderType">
                     <option value="سلة">🛒 طلب سلة</option>
                     <option value="واتساب">💬 طلب واتساب</option>
                 </select>
             </div>
-            <button id="saveBtn" onclick="saveOrder()" class="btn-primary">حفظ الطلب ✅</button>
+            <button onclick="saveOrder()" id="saveBtn" style="width:100%; margin-top:20px; padding:18px; background:#28a745; color:white; border:none; border-radius:15px; cursor:pointer; font-weight:bold; font-size:18px;">حفظ الطلب بنجاح ✅</button>
         </section>
 
-        <div class="tools-area">
-            <input type="text" id="searchInput" oninput="filterOrders()" placeholder="🔍 ابحث بالاسم أو الرقم...">
-            <div class="admin-btns">
-                <button onclick="toggleArchive()" class="btn-gray">📂 الأرشيف</button>
-                <button onclick="printAllToday()" class="btn-gold">⎙ طباعة كشف اليوم</button>
-            </div>
+        <div style="display:flex; gap:25px; flex-wrap:wrap;">
+            <div style="flex:1; min-width:350px;"><h3>🛒 طلبات سلة</h3><hr><br><div id="sallaList"></div></div>
+            <div style="flex:1; min-width:350px;"><h3>💬 طلبات واتساب</h3><hr><br><div id="whatsappList"></div></div>
         </div>
-
-        <main class="lists-wrapper">
-            <div class="list-col">
-                <h2 class="list-title">🛒 سلة</h2>
-                <div id="sallaList"></div>
-            </div>
-            <div class="list-col">
-                <h2 class="list-title">💬 واتساب</h2>
-                <div id="whatsappList"></div>
-            </div>
-        </main>
     </div>
 
     <script src="script.js"></script>
