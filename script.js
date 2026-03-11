@@ -44,24 +44,6 @@ function showApp() {
     const todayISO = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`; 
     if (document.getElementById('calendarFilter')) document.getElementById('calendarFilter').value = todayISO;
     
-    // --- التعديل هنا لإخفاء اسم الموظف الآخر من الواجهة ---
-    const omarCard = document.querySelector('.stat-card.omar');
-    const maryamCard = document.querySelector('.stat-card.maryam');
-
-    if (userRole === "staff") {
-        if (currentUser === "عمر") {
-            if (omarCard) omarCard.style.display = 'block';
-            if (maryamCard) maryamCard.style.display = 'none'; // إخفاء مريم عند عمر
-        } else if (currentUser === "مريم") {
-            if (omarCard) omarCard.style.display = 'none'; // إخفاء عمر عند مريم
-            if (maryamCard) maryamCard.style.display = 'block';
-        }
-    } else {
-        // إبراهيم (الآدمن) يرى الاثنين
-        if (omarCard) omarCard.style.display = 'block';
-        if (maryamCard) maryamCard.style.display = 'block';
-    }
-
     loadData(); 
 }
 
@@ -72,7 +54,7 @@ function processSmartPaste() {
     const id = text.match(/طلب\s*#(\d+)/); if (id) document.getElementById('orderID').value = id[1];
     const totalMatch = text.match(/إجمالي الطلب\s*[\n\r]*.*?\s*([\d,]+(?:\.\d+)?)\s*SAR/);
     if (totalMatch) {
-        const cleanPrice = totalMatch[1].replace(/,/g, '');
+        let cleanPrice = totalMatch[1].replace(/,/g, '');
         document.getElementById('orderPrice').value = cleanPrice;
     }
     const t = text.match(/(?:شحنة برقم|بوليصة)\s*(\d{10,15})/); if (t) document.getElementById('trackingID').value = t[1];
@@ -84,21 +66,33 @@ function loadData() {
         const sList = document.getElementById('sallaList');
         const wList = document.getElementById('whatsappList');
         if (!sList || !wList) return;
-        sList.innerHTML = ""; wList.innerHTML = "";
+        
+        sList.innerHTML = ""; 
+        wList.innerHTML = "";
+        
         let stats = { totalO: 0, totalS: 0, omarO: 0, omarS: 0, maryamO: 0, maryamS: 0 };
         const selectedDate = document.getElementById('calendarFilter').value.split('-').reverse().join('-');
         const search = document.getElementById('searchInput').value.toLowerCase();
 
         snap.forEach(child => {
             const o = child.val();
-            if (userRole === "staff" && o.emp !== currentUser) return;
             const isDate = o.dateKey === selectedDate;
-            const isMatch = o.name.toLowerCase().includes(search) || o.id.includes(search);
+            const isMatch = (o.name && o.name.toLowerCase().includes(search)) || (o.id && String(o.id).includes(search));
+
+            // --- إصلاح السعر هنا (تحويل النص إلى رقم بشكل آمن جداً) ---
+            let rawPrice = String(o.price || "0").replace(/[^\d.-]/g, '');
+            let priceValue = parseFloat(rawPrice) || 0;
+
             if (isDate) {
-                stats.totalO++; stats.totalS += parseFloat(o.price || 0);
-                if (o.emp === "عمر") { stats.omarO++; stats.omarS += parseFloat(o.price || 0); }
-                if (o.emp === "مريم") { stats.maryamO++; stats.maryamS += parseFloat(o.price || 0); }
+                stats.totalO++; 
+                stats.totalS += priceValue;
+                if (o.emp === "عمر") { stats.omarO++; stats.omarS += priceValue; }
+                if (o.emp === "مريم") { stats.maryamO++; stats.maryamS += priceValue; }
             }
+
+            // تصفية العرض (إبراهيم يرى كل شيء، الموظف يرى طلباته فقط)
+            if (userRole === "staff" && o.emp !== currentUser) return;
+
             if (isDate || (search.length > 0 && isMatch)) {
                 const card = `
                 <div class="order-card" data-user="${o.emp}">
@@ -108,7 +102,7 @@ function loadData() {
                         <button onclick="printSingleOrder('${child.key}')">⎙</button>
                     </div>
                     <strong>👤 ${o.name}</strong><br>
-                    <span>🔢 طلب: ${o.id} | 💰 ${o.price} ر.س</span><br>
+                    <span>🔢 طلب: ${o.id} | 💰 ${priceValue} ر.س</span><br>
                     <span>🏢 ${o.branch} | 🏷️ الموظف: ${o.emp}</span><br>
                     <span>👨‍🍳 المجهز: ${o.prepEmp || "---"}</span><br>
                     <span>📦 ${o.delivery} ${o.delivery !== 'توصيل مندوب' && o.delivery !== 'استلام من الفرع' ? `| 📄 بوليصة: ${o.trackingID || '---'}` : ''}</span>
@@ -121,16 +115,26 @@ function loadData() {
 }
 
 function updateStatsUI(s) {
-    const adminCards = document.querySelectorAll('.admin-only');
+    // تحديث الأرقام في الواجهة
+    document.getElementById('statTotalOrders').innerText = s.totalO;
+    document.getElementById('statTotalSales').innerText = s.totalS.toFixed(2) + " ريال";
+    document.getElementById('statOmar').innerText = s.omarO + " طلب | " + s.omarS.toFixed(2) + " ريال";
+    document.getElementById('statMaryam').innerText = s.maryamO + " طلب | " + s.maryamS.toFixed(2) + " ريال";
+    
+    // إظهار وإخفاء البطاقات بناءً على الصلاحية
+    const adminOnlyElements = document.querySelectorAll('.admin-only');
+    const omarCard = document.querySelector('.stat-card.omar');
+    const maryamCard = document.querySelector('.stat-card.maryam');
+
     if (userRole === 'admin') {
-        adminCards.forEach(el => el.classList.remove('hidden'));
-        document.getElementById('statTotalOrders').innerText = s.totalO;
-        document.getElementById('statTotalSales').innerText = s.totalS.toFixed(2) + " ريال";
+        adminOnlyElements.forEach(el => el.style.display = 'block');
+        if (omarCard) omarCard.style.display = 'block';
+        if (maryamCard) maryamCard.style.display = 'block';
     } else {
-        adminCards.forEach(el => el.classList.add('hidden'));
+        adminOnlyElements.forEach(el => el.style.display = 'none');
+        if (omarCard) omarCard.style.display = (currentUser === "عمر") ? 'block' : 'none';
+        if (maryamCard) maryamCard.style.display = (currentUser === "مريم") ? 'block' : 'none';
     }
-    if (document.getElementById('statOmar')) document.getElementById('statOmar').innerText = `${s.omarO} طلب | ${s.omarS.toFixed(2)} ريال`;
-    if (document.getElementById('statMaryam')) document.getElementById('statMaryam').innerText = `${s.maryamO} طلب | ${s.maryamS.toFixed(2)} ريال`;
 }
 
 function saveOrder() {
@@ -148,12 +152,32 @@ function saveOrder() {
         time: new Date().toLocaleTimeString('ar-SA')
     };
     if (!data.name) return alert("يرجى إدخال اسم العميل");
+    
     if (editKey) {
-        db.ref('orders/' + editKey).once('value', snapshot => {
-            data.dateKey = snapshot.val().dateKey; 
-            db.ref('orders/' + editKey).update(data).then(() => { editKey = null; location.reload(); });
+        db.ref('orders/' + editKey).update(data).then(() => { 
+            editKey = null; 
+            document.getElementById('saveBtn').innerText = "حفظ الطلب بنجاح ✅";
+            location.reload(); 
         });
-    } else { db.ref('orders').push(data).then(() => location.reload()); }
+    } else { 
+        db.ref('orders').push(data).then(() => location.reload()); 
+    }
+}
+
+function smartDelete(key) { if (prompt("كلمة السر:") === "6410") db.ref('orders/' + key).remove(); }
+function logout() { localStorage.clear(); location.reload(); }
+
+// دوال الطباعة والتعديل
+function editOrder(key) {
+    db.ref('orders/' + key).once('value', s => {
+        const o = s.val(); editKey = key;
+        document.getElementById('custName').value = o.name;
+        document.getElementById('orderID').value = o.id;
+        document.getElementById('orderPrice').value = o.price;
+        document.getElementById('prepEmp').value = o.prepEmp || ""; 
+        document.getElementById('saveBtn').innerText = "تحديث البيانات 🔄";
+        window.scrollTo(0,0);
+    });
 }
 
 function getPrintDecor(o) {
@@ -182,19 +206,3 @@ function printSingleOrder(key) {
         const win = window.open('', ''); win.document.write(getPrintDecor(s.val())); win.document.close(); win.print();
     });
 }
-
-function smartDelete(key) { if (prompt("كلمة السر:") === "6410") db.ref('orders/' + key).remove(); }
-
-function editOrder(key) {
-    db.ref('orders/' + key).once('value', s => {
-        const o = s.val(); editKey = key;
-        document.getElementById('custName').value = o.name;
-        document.getElementById('orderID').value = o.id;
-        document.getElementById('orderPrice').value = o.price;
-        document.getElementById('prepEmp').value = o.prepEmp || ""; 
-        document.getElementById('saveBtn').innerText = "تحديث البيانات 🔄";
-        window.scrollTo(0,0);
-    });
-}
-
-function logout() { localStorage.clear(); location.reload(); }
