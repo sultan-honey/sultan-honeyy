@@ -21,14 +21,24 @@
 
     <div id="appBody" style="display:none;" class="app-container">
         <header class="main-header">
-            <h2>🍯 سلطان العسل</h2>
-            <div>الموظف الحالي: <span id="displayName" class="user-badge"></span> 
-            <button onclick="logout()" style="background:#dc3545; color:white; border:none; padding:8px 15px; border-radius:10px; cursor:pointer; margin-right:10px;">خروج</button></div>
+            <div class="logo-section">
+                <img src="1000031072.png" alt="الشعار" class="header-logo">
+                <h2>سلطان العسل</h2>
+            </div>
+            <div>
+                الموظف الحالي: <span id="displayName" class="user-badge"></span> 
+                <button onclick="logout()" class="btn-logout">خروج</button>
+            </div>
         </header>
 
         <div class="stats-container">
             <div class="stat-card admin-only"><h3>إجمالي طلبات اليوم</h3><p id="statTotalOrders">0</p></div>
             <div class="stat-card admin-only"><h3>إجمالي مبيعات اليوم</h3><p id="statTotalSales">0</p></div>
+            
+            <div class="stat-card admin-only" style="border-bottom-color: #ff8c00;"><h3>📦 شحن سمسا</h3><p id="statSmsaCount">0</p></div>
+            <div class="stat-card admin-only" style="border-bottom-color: #00ced1;"><h3>🛵 توصيل مندوب</h3><p id="statDeliveryCount">0</p></div>
+            <div class="stat-card admin-only" style="border-bottom-color: #6f42c1;"><h3>🏪 استلام فرع</h3><p id="statBranchCount">0</p></div>
+            
             <div class="stat-card omar"><h3>مبيعات عمر</h3><p id="statOmar">0</p></div>
             <div class="stat-card maryam"><h3>مبيعات مريم</h3><p id="statMaryam">0</p></div>
         </div>
