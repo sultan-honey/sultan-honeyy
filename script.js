@@ -23,12 +23,12 @@ function getTodayDateFormatted() {
 window.onload = function() { if (currentUser) { showApp(); } };
 
 function login() {
-    const users = { "عمر": "111", "مريم": "222", "إبراهيم": "6410" };
+    const users = { "عمر": "111", "مريم": "222", "سلطان": "64100" };
     const user = document.getElementById('username').value;
     const pass = document.getElementById('password').value;
     if (users[user] === pass) {
         currentUser = user;
-        userRole = (user === "إبراهيم") ? "admin" : "staff";
+        userRole = (user === "سلطان") ? "admin" : "staff";
         localStorage.setItem('loggedUser', user);
         localStorage.setItem('userRole', userRole);
         showApp();
@@ -215,5 +215,5 @@ function printSingleOrder(key) {
     });
 }
 
-function smartDelete(key) { if (prompt("كلمة السر:") === "6410") db.ref('orders/' + key).remove(); }
+function smartDelete(key) { if (prompt("كلمة السر:") === "64100") db.ref('orders/' + key).remove(); }
 function logout() { localStorage.clear(); location.reload(); }
