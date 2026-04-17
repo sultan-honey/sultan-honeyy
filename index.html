@@ -32,22 +32,45 @@
         </header>
 
         <div class="stats-container">
+            <div class="stat-card admin-only" style="border-bottom-color: #00ced1;"><h3>🛵 توصيل مندوب</h3><p id="statDeliveryCount">0 طلب</p></div>
+            <div class="stat-card admin-only" style="border-bottom-color: #ff8c00;"><h3>📦 شحن سمسا</h3><p id="statSmsaCount">0 شحنة</p></div>
+            <div class="stat-card admin-only"><h3>إجمالي مبيعات اليوم</h3><p id="statTotalSales">0 ريال</p></div>
             <div class="stat-card admin-only"><h3>إجمالي طلبات اليوم</h3><p id="statTotalOrders">0</p></div>
-            <div class="stat-card admin-only"><h3>إجمالي مبيعات اليوم</h3><p id="statTotalSales">0</p></div>
             
-            <div class="stat-card admin-only" style="border-bottom-color: #ff8c00;"><h3>📦 شحن سمسا</h3><p id="statSmsaCount">0</p></div>
-            <div class="stat-card admin-only" style="border-bottom-color: #00ced1;"><h3>🛵 توصيل مندوب</h3><p id="statDeliveryCount">0</p></div>
-            <div class="stat-card admin-only" style="border-bottom-color: #6f42c1;"><h3>🏪 استلام فرع</h3><p id="statBranchCount">0</p></div>
-            
-            <div class="stat-card omar"><h3>مبيعات عمر</h3><p id="statOmar">0</p></div>
-            <div class="stat-card maryam"><h3>مبيعات مريم</h3><p id="statMaryam">0</p></div>
+            <div class="stat-card maryam"><h3>مبيعات مريم</h3><p id="statMaryam">0 طلب | 0 ريال</p></div>
+            <div class="stat-card omar"><h3>مبيعات عمر</h3><p id="statOmar">0 طلب | 0 ريال</p></div>
+            <div class="stat-card admin-only" style="border-bottom-color: #6f42c1;"><h3>🏪 استلام فرع</h3><p id="statBranchCount">0 استلام</p></div>
         </div>
 
+        <section class="form-section admin-only" style="border: 2px solid var(--gold); background: #fffcf0;">
+            <h3 style="margin-bottom:15px; color: var(--gold);">📊 مركز تقارير سلطان (جرد مخصص)</h3>
+            <div class="input-grid" style="grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); align-items: end;">
+                <div>
+                    <span style="font-size:14px; font-weight:bold; color:#555;">الفرع:</span>
+                    <select id="reportBranch" style="width:100%; margin-top:5px;">
+                        <option value="الكل">جميع الفروع</option>
+                        <option value="فرع المحالة">فرع المحالة</option>
+                        <option value="فرع الروضة">فرع الروضة</option>
+                        <option value="فرع التعمير">فرع التعمير</option>
+                    </select>
+                </div>
+                <div>
+                    <span style="font-size:14px; font-weight:bold; color:#555;">من تاريخ:</span>
+                    <input type="date" id="startDate" style="width:100%; margin-top:5px;">
+                </div>
+                <div>
+                    <span style="font-size:14px; font-weight:bold; color:#555;">إلى تاريخ:</span>
+                    <input type="date" id="endDate" style="width:100%; margin-top:5px;">
+                </div>
+                <button onclick="generateCustomReport()" style="background: var(--gold); color: white; border: none; border-radius: 10px; cursor: pointer; font-weight: bold; padding: 15px;">⎙ طباعة التقرير</button>
+            </div>
+        </section>
+
         <div class="filter-bar">
-            <span>التاريخ:</span>
-            <input type="date" id="calendarFilter" onchange="loadData()">
-            <input type="text" id="searchInput" onkeyup="loadData()" placeholder="🔍 ابحث بالاسم أو رقم الطلب في الأرشيف..." style="flex:1;">
             <button onclick="printAllToday()" class="btn-print-all">⎙ طباعة كافة طلبات اليوم</button>
+            <input type="text" id="searchInput" onkeyup="loadData()" placeholder="🔍 ابحث بالاسم أو رقم الطلب في الأرشيف..." style="flex:1;">
+            <input type="date" id="calendarFilter" onchange="loadData()">
+            <span style="font-weight:bold;">:تاريخ العرض</span>
         </div>
 
         <section class="form-section">
