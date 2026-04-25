@@ -48,7 +48,6 @@ function showApp() {
     const todayLocal = getLocalTodayDate();
     if (document.getElementById('calendarFilter')) document.getElementById('calendarFilter').value = todayLocal;
     
-    // ضبط تواريخ التقارير الافتراضية لليوم
     if (document.getElementById('startDate')) document.getElementById('startDate').value = todayLocal;
     if (document.getElementById('endDate')) document.getElementById('endDate').value = todayLocal;
     
@@ -58,26 +57,43 @@ function showApp() {
 function processSmartPaste() {
     const text = document.getElementById('smartInput').value;
     if (!text) return;
-    const n = text.match(/العميل\s*\n\s*(.+)/); if (n) document.getElementById('custName').value = n[1].trim();
-    const id = text.match(/طلب\s*#(\d+)/); if (id) document.getElementById('orderID').value = id[1];
-    const totalMatch = text.match(/إجمالي الطلب\s*[\n\r]*.*?\s*([\d,]+(?:\.\d+)?)\s*SAR/);
+
+    const toEnglishDigits = (str) => {
+        const arabicNumbers = ['٠','١','٢','٣','٤','٥','٦','٧','٨','٩'];
+        return str.replace(/[٠-٩]/g, function(d) {
+            return arabicNumbers.indexOf(d);
+        });
+    };
+
+    const n = text.match(/العميل\s*\n\s*(.+)/); 
+    if (n) document.getElementById('custName').value = n[1].trim();
+
+    const id = text.match(/طلب\s*#?([\d٠-٩]+)/); 
+    if (id) document.getElementById('orderID').value = toEnglishDigits(id[1]);
+
+    let totalMatch = text.match(/(?:إجمالي|اجمالي)\s*الطلب[\s\S]*?([\d٠-٩,٬٫\.]+)\s*(?:SAR|ر\.س|SR|رس)/i);
+    
     if (totalMatch) {
-        let cleanPrice = totalMatch[1].replace(/,/g, '');
-        document.getElementById('orderPrice').value = cleanPrice;
+        let numStr = totalMatch[1];
+        numStr = toEnglishDigits(numStr);
+        numStr = numStr.replace(/٫/g, '.').replace(/[٬,]/g, '');
+        document.getElementById('orderPrice').value = numStr;
     }
-    const t = text.match(/(?:شحنة برقم|بوليصة)\s*(\d{10,15})/); if (t) document.getElementById('trackingID').value = t[1];
+
+    const t = text.match(/(?:شحنة برقم|بوليصة|تتبع)\s*#?:?\s*([\d٠-٩]{10,20})/); 
+    if (t) document.getElementById('trackingID').value = toEnglishDigits(t[1]);
+
     document.getElementById('orderType').value = "سلة";
 }
 
-// الدالة السحرية للتقارير (من تاريخ - إلى تاريخ)
 function generateCustomReport() {
     const branch = document.getElementById('reportBranch').value;
-    const startRaw = document.getElementById('startDate').value; // YYYY-MM-DD
-    const endRaw = document.getElementById('endDate').value; // YYYY-MM-DD
+    const orderType = document.getElementById('reportOrderType').value;
+    const startRaw = document.getElementById('startDate').value; 
+    const endRaw = document.getElementById('endDate').value; 
     
     if(!startRaw || !endRaw) return alert("يرجى تحديد تاريخ البداية والنهاية!");
 
-    // تحويل التواريخ ليتمكن النظام من مقارنتها رياضياً
     const startDateObj = new Date(startRaw);
     startDateObj.setHours(0,0,0,0);
     const endDateObj = new Date(endRaw);
@@ -89,17 +105,21 @@ function generateCustomReport() {
     const displayEnd = endRaw.split('-').reverse().join('-');
 
     db.ref('orders').once('value', (snap) => {
+        let typeTitle = "جميع الطلبات";
+        if (orderType === "سلة") typeTitle = "طلبات سلة 🛒";
+        if (orderType === "واتساب") typeTitle = "طلبات واتساب 💬";
+
         let reportHTML = `
         <div dir="rtl" style="font-family:Tahoma; padding:30px; border:2px solid #b48608;">
             <div style="text-align:center; margin-bottom:20px;">
                 <h1 style="color:#b48608; margin:0;">سلطان العسل 🍯</h1>
-                <h3 style="margin-top:10px;">تقرير المبيعات المخصص - ${branch}</h3>
+                <h3 style="margin-top:10px;">تقرير المبيعات المخصص - ${branch} | <span style="color:#007bff;">${typeTitle}</span></h3>
                 <p style="background:#eee; display:inline-block; padding:5px 15px; border-radius:50px;">من (${displayStart}) ⬅️ إلى (${displayEnd})</p>
             </div>
             <table border="1" style="width:100%; border-collapse:collapse; text-align:center;">
                 <thead>
                     <tr style="background:#f8f9fa;">
-                        <th style="padding:10px;">التاريخ</th><th>العميل</th><th>رقم الطلب</th><th>الفرع</th><th>المبلغ</th>
+                        <th style="padding:10px;">التاريخ</th><th>العميل</th><th>رقم الطلب</th><th>نوع الطلب</th><th>الفرع</th><th>المبلغ</th>
                     </tr>
                 </thead>
                 <tbody>`;
@@ -110,17 +130,27 @@ function generateCustomReport() {
             const o = child.val();
             if(!o.dateKey) return;
 
-            // تحويل تاريخ الطلب الموجود في القاعدة إلى صيغة يمكن مقارنتها
-            const orderDateParts = o.dateKey.split('-'); // DD-MM-YYYY
+            const orderDateParts = o.dateKey.split('-'); 
             const orderDateObj = new Date(`${orderDateParts[2]}-${orderDateParts[1]}-${orderDateParts[0]}`);
             orderDateObj.setHours(12,0,0,0);
 
             const matchesBranch = (branch === "الكل" || o.branch === branch);
+            const matchesType = (orderType === "الكل" || o.type === orderType); 
             const isWithinDateRange = (orderDateObj >= startDateObj && orderDateObj <= endDateObj);
 
-            if (matchesBranch && isWithinDateRange) {
+            if (matchesBranch && matchesType && isWithinDateRange) {
                 const price = parseFloat(String(o.price || "0").replace(/[^\d.-]/g, '')) || 0;
-                reportHTML += `<tr><td style="padding:8px;">${o.dateKey}</td><td>${o.name}</td><td>${o.id}</td><td>${o.branch}</td><td style="color:#28a745; font-weight:bold;">${price.toLocaleString()} ر.س</td></tr>`;
+                const orderTypeDisplay = o.type === "سلة" ? "🛒 سلة" : (o.type === "واتساب" ? "💬 واتساب" : "---");
+
+                reportHTML += `<tr>
+                    <td style="padding:8px;">${o.dateKey}</td>
+                    <td>${o.name}</td>
+                    <td>${o.id}</td>
+                    <td>${orderTypeDisplay}</td>
+                    <td>${o.branch}</td>
+                    <td style="color:#28a745; font-weight:bold;">${price.toLocaleString()} ر.س</td>
+                </tr>`;
+                
                 total += price; count++;
             }
         });
@@ -133,7 +163,7 @@ function generateCustomReport() {
             <div style="margin-top:40px; text-align:left; font-size:12px; color:#777;">تم الاستخراج بواسطة: ${currentUser} | ${new Date().toLocaleString('ar-SA')}</div>
         </div>`;
 
-        if (count === 0) return alert("لا توجد مبيعات في هذه الفترة للفرع المحدد!");
+        if (count === 0) return alert("لا توجد مبيعات تتطابق مع الشروط المحددة!");
 
         const win = window.open('', '_blank');
         win.document.write(reportHTML);
@@ -265,14 +295,24 @@ function editOrder(key) {
 
 function getPrintDecor(o) {
     const color = o.emp === "عمر" ? "#007bff" : (o.emp === "مريم" ? "#e83e8c" : "#000");
-    return `<div style="width:350px; height:350px; border:10px double #b48608; padding:20px; border-radius:15px; direction:rtl; font-family:Tahoma; position:relative; box-sizing:border-box; margin:10px; background:white; float:right;">
-        <h2 style="text-align:center; color:#b48608;">سلطان العسل</h2>
-        <div style="font-size:17px; line-height:1.7; color:${color}; font-weight:bold;">
-            👤 العميل: ${o.name}<br>🔢 الطلب: ${o.id}<br>💰 المبلغ: ${o.price} ريال<br>
-            📦 التوصيل: ${o.delivery}<br>📍 الفرع: ${o.branch}<br>
+    const orderTypeIcon = o.type === "سلة" ? "🛒" : "💬";
+    const orderTypeDisplay = o.type ? `منصة الطلب: ${orderTypeIcon} ${o.type}` : "منصة الطلب: ---";
+
+    return `<div style="width:350px; min-height:350px; border:10px double #b48608; padding:20px; border-radius:15px; direction:rtl; font-family:Tahoma; position:relative; box-sizing:border-box; margin:10px; background:white; float:right;">
+        <h2 style="text-align:center; color:#b48608; margin-top:0;">سلطان العسل</h2>
+        <div style="font-size:16px; line-height:1.8; color:${color}; font-weight:bold;">
+            👤 العميل: ${o.name}<br>
+            🔢 رقم الطلب: ${o.id}<br>
+            💰 المبلغ: ${o.price} ريال<br>
+            📍 الفرع: <span style="color:#b48608;">${o.branch}</span><br>
+            📱 ${orderTypeDisplay}<br>
+            📦 التوصيل: ${o.delivery}<br>
             👨‍🍳 المجهز: ${o.prepEmp || "---"}<br>
-            ${o.trackingID ? `📄 البوليصة: ${o.trackingID}<br>` : ""}🏷️ الموظف: ${o.emp}
-        </div><div style="position:absolute; bottom:15px; left:15px; font-size:11px; color:#666;">📅 ${o.dateKey}</div></div>`;
+            ${o.trackingID ? `📄 البوليصة: ${o.trackingID}<br>` : ""}
+            🏷️ الموظف: ${o.emp}
+        </div>
+        <div style="position:absolute; bottom:15px; left:15px; font-size:11px; color:#666;">📅 ${o.dateKey}</div>
+    </div>`;
 }
 
 function printAllToday() {
@@ -285,6 +325,22 @@ function printAllToday() {
         snap.forEach(c => { if (c.val().dateKey === selectedDate) content += getPrintDecor(c.val()); });
         if(content === "") return alert("لا توجد طلبات لهذا اليوم");
         const win = window.open('', ''); win.document.write(content); win.document.close(); win.print();
+    });
+}
+
+function printSingleOrder(key) {
+    db.ref('orders/' + key).once('value', snap => {
+        const o = snap.val();
+        if (!o) return alert("الطلب غير موجود");
+        
+        const content = getPrintDecor(o);
+        const win = window.open('', ''); 
+        win.document.write('<html><head><title>طباعة طلب</title></head><body style="background:white;">' + content + '</body></html>'); 
+        win.document.close(); 
+        
+        setTimeout(() => {
+            win.print();
+        }, 500);
     });
 }
 
